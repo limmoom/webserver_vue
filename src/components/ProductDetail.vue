@@ -33,7 +33,9 @@ export default {
         };
     },
     mounted() {
-        this.fetchProductDetails(1); // 假设产品ID为1
+        // 获取路由参数中的 id，并调用 fetchProductDetails 方法
+        const productId = this.$route.params.id;
+        this.fetchProductDetails(productId);
     },
     methods: {
         async fetchProductDetails(productId) {
