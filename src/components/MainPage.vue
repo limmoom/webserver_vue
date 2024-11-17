@@ -25,8 +25,6 @@
 </template>
 
 <script>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router'; // 使用useRouter钩子
 import UserProfile from '@/components/UserProfile.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import ProductPublish from './ProductPublish.vue';
@@ -73,7 +71,7 @@ export default {
 .main-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 90vh;
 }
 
 .top-bar {
