@@ -18,13 +18,9 @@
         </ul>
       </aside>
       <div class="content">
-        <component :is="currentComponent" />
+        <component :is="currentComponent" @edit-product="handleEditProduct" @go-back="handleGoBack" />
       </div>
-      
     </div>
-    <!-- <div class="product-summary-block" @click.prevent="currentComponent = 'ProductDetail'">
-      <p1>旅游产品1</p1>
-    </div> -->
   </div>
 </template>
 
@@ -34,6 +30,7 @@ import UserProfile from '@/components/UserProfile.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import ProductPublish from './ProductPublish.vue';
 import ProductDetail from './ProductDetail.vue';
+import ProductUpdate from './ProductUpdate.vue';
 
 export default {
   name: 'MainPage',
@@ -41,12 +38,14 @@ export default {
     UserProfile,
     SearchBar,
     ProductPublish,
-    ProductDetail
+    ProductDetail,
+    ProductUpdate,
   },
   data() {
     return {
       isSidebarCollapsed: false,
-      currentComponent: 'SearchBar', // 默认显示的组件
+      currentComponent: 'UserProfile',
+      productId: '',
     };
   },
   methods: {
@@ -56,7 +55,15 @@ export default {
     showUserProfile() {
       this.currentComponent = 'UserProfile';
     },
-
+    handleEditProduct(productId) {
+      this.currentComponent = 'ProductUpdate';
+      // 你可以在这里传递 productId 给 ProductUpdate 组件
+      this.productId = productId;
+      localStorage.setItem('editted_ProductId', productId);
+    },
+    handleGoBack() {
+      this.currentComponent = 'UserProfile';
+    },
   },
 };  
 </script>

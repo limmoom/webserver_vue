@@ -1,7 +1,8 @@
 <template>
     <div class="product-publish">
         <div class="form-container">
-            <h2>发布产品</h2>
+            <h2>修改产品</h2>
+            <!-- <button @click="$emit('go-back')" class="link-button">返回</button> -->
             <form @submit.prevent="handlePublish">
                 <div class="form-group">
                     <label for="productName">产品标题:</label>
@@ -48,8 +49,8 @@
                     <input type="number" v-model="price" required />
                 </div>
                 <div class="button-group">
-                    <button type="submit" @click="handlePublish">提交</button>
-                    <button type="button" @click="handleDelete">清空</button>
+                    <button type="submit">提交修改</button>
+                    <button type="button" @click="$emit('go-back')">放弃修改</button>
                 </div>
             </form>
         </div>
@@ -57,102 +58,108 @@
 </template>
 
 <script>
-import { ref } from 'vue';
 import axios from 'axios';
 import DatePicker from 'vue3-datepicker'; // 确认使用的日期选择器包
 
 export default {
-    name: 'ProductPublish',
+    name: 'ProductUpdate',
     components: {
         DatePicker
     },
-    setup() {
-        const productName = ref('');
-        const departureTime = ref('');
-        const cutoffTime = ref('');
-        const productFeatures = ref('');
-        const productTheme = ref('');
-        const departureLocation = ref('');
-        const destination = ref('');
-        const maxCapacity = ref('0');
-        const productType = ref('跟团游');
-        const price = ref('0');
-
-        const handlePublish = async () => {
+    props: {
+        productId: {
+            type: String,
+            required: true,
+        },
+    },
+    data() {
+        return {
+            productName: '',
+            departureTime: null,
+            cutoffTime: null,
+            productFeatures: '',
+            productTheme: '',
+            departureLocation: '',
+            destination: '',
+            maxCapacity: '0',
+            productType: '跟团游',
+            price: '0',
+        };
+    },
+    created() {
+        this.fetchProductDetails();
+    },
+    methods: {
+        async fetchProductDetails() {
+            // 使用 productId 获取产品详细信息
+            try {
+                const productId = localStorage.getItem('editted_ProductId');
+                const response = await axios.get(`/api/v1/TravelProduct/${productId}`);
+                if (response.data.success) {
+                    const product = response.data.data;
+                    this.productName = product.title;
+                    this.departureTime = new Date(product.startDate); // 转换为 Date 对象
+                    this.cutoffTime = new Date(product.endDate); // 转换为 Date 对象
+                    this.productFeatures = product.features;
+                    this.productTheme = product.theme;
+                    this.departureLocation = product.departureLocation;
+                    this.destination = product.destination;
+                    this.maxCapacity = product.maxCapacity;
+                    this.productType = product.productType;
+                    this.price = product.price;
+                } else {
+                    alert('获取产品信息失败：' + response.data.errorMsg);
+                }
+            } catch (error) {
+                console.error('获取产品信息请求出错：', error);
+                alert('获取产品信息时发生错误，请稍后重试。');
+            }
+        },
+        async handlePublish() {
             try {
                 // 构造请求数据
                 const productDTO = {
                     // userID:
-                    title: productName.value,
-                    startDate: departureTime.value,
-                    endDate: cutoffTime.value,
-                    features: productFeatures.value,
-                    theme: productTheme.value,
-                    departureLocation: departureLocation.value,
-                    destination: destination.value,
-                    maxCapacity: maxCapacity.value,
-                    productType: productType.value,
-                    price: price.value,
+                    title: this.productName,
+                    startDate: this.departureTime,
+                    endDate: this.cutoffTime,
+                    features: this.productFeatures,
+                    theme: this.productTheme,
+                    departureLocation: this.departureLocation,
+                    destination: this.destination,
+                    maxCapacity: this.maxCapacity,
+                    productType: this.productType,
+                    price: this.price,
                 };
 
                 // 发送 POST 请求到服务器的产品发布接口
-                const response = await axios.post('/api/v1/Product/publish', productDTO);
+                const productId = localStorage.getItem('editted_ProductId');
+                const response = await axios.put(`/api/v1/TravelProduct/${productId}`, productDTO);
 
                 if (response.data.success) {
-                    alert('产品发布成功！');
+                    alert('产品修改成功！');
                     // 清空表单
-                    productName.value = '';
-                    departureTime.value = '';
-                    cutoffTime.value = '';
-                    productFeatures.value = '';
-                    productTheme.value = '';
-                    departureLocation.value = '';
-                    destination.value = '';
-                    maxCapacity.value = '';
-                    productType.value = '';
-                    price.value = '';
+                    this.productName = '';
+                    this.departureTime = '';
+                    this.cutoffTime = '';
+                    this.productFeatures = '';
+                    this.productTheme = '';
+                    this.departureLocation = '';
+                    this.destination = '';
+                    this.maxCapacity = '';
+                    this.productType = '';
+                    this.price = '';
+                    this.$emit('go-back');
                 } else {
-                    alert('产品发布失败：' + response.data.message);
+                    alert('产品修改失败：' + response.data.errorMsg);
                 }
             } catch (error) {
-                console.error('产品发布请求出错：', error);
-                alert('产品发布时发生错误，请稍后重试。');
+                console.error('产品修改请求出错：', error);
+                alert('产品修改时发生错误，请稍后重试。');
             }
-        };
+        },
 
-        const handleSave = () => {
-            // 处理保存逻辑
-            alert('保存功能尚未实现');
-        };
-
-        const handleDelete = () => {
-            productName.value = '';
-            departureTime.value = '';
-            cutoffTime.value = '';
-            productFeatures.value = '';
-            productTheme.value = '';
-            departureLocation.value = '';
-            destination.value = '';
-            maxCapacity.value = '';
-            productType.value = '';
-            price.value = '';
-        };
-
-        return {
-            productName,
-            departureTime,
-            productFeatures,
-            productTheme,
-            departureLocation,
-            destination,
-            maxCapacity,
-            productType,
-            price,
-            handlePublish,
-            handleSave,
-            handleDelete,
-        };
-    }
+    },
 };
 </script>
 
@@ -194,6 +201,7 @@ body {
     font-size: 24px;
     margin-bottom: 20px;
 }
+
 
 .form-group {
     display: flex;

@@ -13,7 +13,7 @@
           <div class="product-header">
             <h4>{{ product.title }}</h4>
             <div class="product-actions">
-              <button @click="editProduct(product.id)" class="link-button">修改产品</button>
+              <button @click="$emit('edit-product', product.id)" class="link-button">修改产品</button>
               <button @click="deleteProduct(product.id)" class="link-button">删除产品</button>
             </div>
           </div>
@@ -81,10 +81,10 @@ export default {
         alert('获取旅游产品信息时发生错误，请稍后重试。');
       }
     },
-    editProduct(productId) {
-      // 切换到产品编辑组件
-      this.$router.push({ name: 'ProductEdit', params: { id: productId } });
-    },
+    // editProduct(productId) {
+    //   // 切换到产品编辑组件
+    //   this.$router.push({ name: 'ProductEdit', params: { id: productId } });
+    // },
 
     async deleteProduct(productId) {
       if (confirm('确定要删除该产品吗？')) {
