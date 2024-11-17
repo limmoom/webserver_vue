@@ -22,9 +22,9 @@
       </div>
       
     </div>
-    <div class="product-summary-block" @click.prevent="currentComponent = 'ProductDetail'">
+    <!-- <div class="product-summary-block" @click.prevent="currentComponent = 'ProductDetail'">
       <p1>旅游产品1</p1>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -65,7 +65,7 @@ export default {
 .main-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 90vh;
 }
 
 .top-bar {
