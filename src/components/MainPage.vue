@@ -25,7 +25,8 @@
 </template>
 
 <script>
-
+import { ref } from 'vue';
+import { useRouter } from 'vue-router'; // 使用useRouter钩子
 import UserProfile from '@/components/UserProfile.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import ProductPublish from './ProductPublish.vue';
@@ -44,7 +45,7 @@ export default {
   data() {
     return {
       isSidebarCollapsed: false,
-      currentComponent: 'UserProfile',
+      currentComponent: 'SearchBar',
       productId: '',
     };
   },
@@ -72,7 +73,7 @@ export default {
 .main-page {
   display: flex;
   flex-direction: column;
-  height: 90vh;
+  height: 100vh;
 }
 
 .top-bar {
@@ -148,10 +149,10 @@ export default {
   border-radius: 5px; /* 可选：边角圆滑 */
   transition: all 0.3s ease; /* 添加平滑的过渡效果 */
   cursor: pointer; /* 鼠标悬停时显示手型光标 */
-  }
+}
 
-  .product-summary-block:hover {
+.product-summary-block:hover {
   background-color: #aaa; /* 鼠标悬停时背景颜色变暗 */
   transform: scale(1.1); /* 鼠标悬停时放大 */
-  }
+}
 </style>
