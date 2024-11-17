@@ -37,13 +37,14 @@ export default {
 
                 // 发送 POST 请求到服务器的登录接口
                 const response = await axios.post('/api/v1/User/login/ByEmail', userDTO);
+                console.log(response);
 
                 if (response.data.success) {
                     // 登录成功，获取返回的令牌或其他信息
-                    const token = response.data.data;   
+                    const UserID = response.data.data.user.id;   
 
                     // 将令牌保存到本地存储，以备后续请求使用
-                    localStorage.setItem('token', token);
+                    localStorage.setItem('UserID', UserID);
 
                     // 跳转到主页面
                     router.push('/main');

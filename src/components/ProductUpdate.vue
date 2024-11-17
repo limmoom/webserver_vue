@@ -48,7 +48,7 @@
                     <input type="number" v-model="price" required />
                 </div>
                 <div class="button-group">
-                    <button type="submit">提交</button>
+                    <button type="submit" @click="handlePublish">提交</button>
                     <button type="button" @click="handleDelete">清空</button>
                 </div>
             </form>
@@ -68,8 +68,8 @@ export default {
     },
     setup() {
         const productName = ref('');
-        let departureTime = ref(new Date());
-        let cutoffTime = ref(new Date());
+        const departureTime = ref('');
+        const cutoffTime = ref('');
         const productFeatures = ref('');
         const productTheme = ref('');
         const departureLocation = ref('');
@@ -77,21 +77,15 @@ export default {
         const maxCapacity = ref('0');
         const productType = ref('跟团游');
         const price = ref('0');
-        const UserID = localStorage.getItem('UserID');
-
-        // let startDate = departureTime.value.substring(0, 10)
-        // let endDate = cutoffTime.value.substring(0, 10)
-        // console.log("startDate: " + startDate)
-
 
         const handlePublish = async () => {
             try {
                 // 构造请求数据
                 const productDTO = {
-                    userId: UserID,
+                    // userID:
                     title: productName.value,
-                    startDate: departureTime.value.toISOString().substring(0, 10),
-                    endDate: cutoffTime.value.toISOString().substring(0, 10),
+                    startDate: departureTime.value,
+                    endDate: cutoffTime.value,
                     features: productFeatures.value,
                     theme: productTheme.value,
                     departureLocation: departureLocation.value,
@@ -101,11 +95,8 @@ export default {
                     price: price.value,
                 };
 
-                console.log(productDTO);
-
                 // 发送 POST 请求到服务器的产品发布接口
-                const response = await axios.post('/api/v1/TravelProduct', productDTO);
-                console.log(response);
+                const response = await axios.post('/api/v1/Product/publish', productDTO);
 
                 if (response.data.success) {
                     alert('产品发布成功！');
@@ -121,7 +112,7 @@ export default {
                     productType.value = '';
                     price.value = '';
                 } else {
-                    alert('产品发布失败：' + response.data.errorMsg);
+                    alert('产品发布失败：' + response.data.message);
                 }
             } catch (error) {
                 console.error('产品发布请求出错：', error);
@@ -150,7 +141,6 @@ export default {
         return {
             productName,
             departureTime,
-            cutoffTime,
             productFeatures,
             productTheme,
             departureLocation,
