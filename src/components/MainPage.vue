@@ -20,6 +20,10 @@
       <div class="content">
         <component :is="currentComponent" />
       </div>
+      
+    </div>
+    <div class="product-summary-block" @click.prevent="currentComponent = 'ProductDetail'">
+      <p1>旅游产品1</p1>
     </div>
   </div>
 </template>
@@ -29,13 +33,15 @@
 import UserProfile from '@/components/UserProfile.vue';
 import SearchBar from '@/components/SearchBar.vue';
 import ProductPublish from './ProductPublish.vue';
+import ProductDetail from './ProductDetail.vue';
 
 export default {
   name: 'MainPage',
   components: {
     UserProfile,
     SearchBar,
-    ProductPublish
+    ProductPublish,
+    ProductDetail
   },
   data() {
     return {
@@ -124,4 +130,21 @@ export default {
   font-weight: bold;
   margin-bottom: 10px;
 }
+
+.product-summary-block {
+  width: 200px; /* 宽度 */
+  height: 50px; /* 长度 */
+  background-color: #ccc; /* 灰色底 */
+  color: #333; /* 文字颜色 */
+  text-align: center; /* 文字居中 */
+  line-height: 30px; /* 使文字垂直居中 */
+  border-radius: 5px; /* 可选：边角圆滑 */
+  transition: all 0.3s ease; /* 添加平滑的过渡效果 */
+  cursor: pointer; /* 鼠标悬停时显示手型光标 */
+  }
+
+  .product-summary-block:hover {
+  background-color: #aaa; /* 鼠标悬停时背景颜色变暗 */
+  transform: scale(1.1); /* 鼠标悬停时放大 */
+  }
 </style>
