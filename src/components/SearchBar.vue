@@ -16,27 +16,82 @@
       <!-- 跟团方式筛选 -->
       <div class="filter-category">
         <span>跟团方式：</span>
-        <button @click="addFilter('productType', '跟团游')">跟团游</button>
-        <button @click="addFilter('productType', '自由行')">自由行</button>
-        <button @click="addFilter('productType', '定制游')">定制游</button>
+        <button
+          @click="addFilter('productType', '跟团游')"
+          :class="{'selected': selectedFilters.productType === '跟团游'}"
+        >
+          跟团游
+        </button>
+        <button
+          @click="addFilter('productType', '自由行')"
+          :class="{'selected': selectedFilters.productType === '自由行'}"
+        >
+          自由行
+        </button>
+        <button
+          @click="addFilter('productType', '定制游')"
+          :class="{'selected': selectedFilters.productType === '定制游'}"
+        >
+          定制游
+        </button>
       </div>
 
       <!-- 出发地筛选 -->
       <div class="filter-category">
         <span>出发地：</span>
-        <button @click="addFilter('departureLocation', '北京')">北京</button>
-        <button @click="addFilter('departureLocation', '上海')">上海</button>
-        <button @click="addFilter('departureLocation', '昆明')">昆明</button>
-        <button @click="addFilter('departureLocation', '丽江')">丽江</button>
+        <button
+          @click="addFilter('departureLocation', '北京')"
+          :class="{'selected': selectedFilters.departureLocation === '北京'}"
+        >
+          北京
+        </button>
+        <button
+          @click="addFilter('departureLocation', '上海')"
+          :class="{'selected': selectedFilters.departureLocation === '上海'}"
+        >
+          上海
+        </button>
+        <button
+          @click="addFilter('departureLocation', '昆明')"
+          :class="{'selected': selectedFilters.departureLocation === '昆明'}"
+        >
+          昆明
+        </button>
+        <button
+          @click="addFilter('departureLocation', '丽江')"
+          :class="{'selected': selectedFilters.departureLocation === '丽江'}"
+        >
+          丽江
+        </button>
       </div>
 
       <!-- 目的地筛选 -->
       <div class="filter-category">
         <span>目的地：</span>
-        <button @click="addFilter('destination', '北京')">北京</button>
-        <button @click="addFilter('destination', '上海')">上海</button>
-        <button @click="addFilter('destination', '昆明')">昆明</button>
-        <button @click="addFilter('destination', '丽江')">丽江</button>
+        <button
+          @click="addFilter('destination', '北京')"
+          :class="{'selected': selectedFilters.destination === '北京'}"
+        >
+          北京
+        </button>
+        <button
+          @click="addFilter('destination', '上海')"
+          :class="{'selected': selectedFilters.destination === '上海'}"
+        >
+          上海
+        </button>
+        <button
+          @click="addFilter('destination', '昆明')"
+          :class="{'selected': selectedFilters.destination === '昆明'}"
+        >
+          昆明
+        </button>
+        <button
+          @click="addFilter('destination', '丽江')"
+          :class="{'selected': selectedFilters.destination === '丽江'}"
+        >
+          丽江
+        </button>
       </div>
     </div>
 
@@ -58,7 +113,7 @@
       <div v-if="!loading" class="pagination">
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 0">上一页</button>
         <span>第 {{ currentPage + 1 }} 页</span>
-        <button @click="changePage(currentPage + 1)" :disabled="currentPage * pageSize + pageSize >= totalItems">下一页</button>
+        <button @click="changePage(currentPage + 1)" >下一页</button>
       </div>
     </div>
   </div>
@@ -74,8 +129,8 @@ export default {
       products: [], // 搜索结果
       loading: false, // 加载状态
       currentPage: 0, // 当前页
-      pageSize: 10, // 每页显示的数量
-      totalItems: 0, // 总结果数
+      pageSize: 4, // 每页显示的数量
+      totalItems: 20, // 总结果数
     };
   },
   methods: {
@@ -111,7 +166,8 @@ export default {
         const data = await response.json();
         if (data.success) {
           this.products = data.data;
-          this.totalItems = data.totalCount; // 假设返回的接口有 `totalCount`
+          this.totalItems = this.products.length;
+          //console.log(this.totalItems);
         } else {
           console.error("Error fetching products:", data.errorMsg);
         }
@@ -124,7 +180,7 @@ export default {
 
     // 分页控制
     changePage(page) {
-      if (page >= 0 && page * this.pageSize < this.totalItems) {
+      if (page >= 0 ) {
         this.currentPage = page;
         this.fetchProducts();
       }
@@ -201,6 +257,10 @@ export default {
 
 .filter-category button:hover {
   background-color: #0056b3;
+}
+
+.filter-category button.selected {
+  background-color: #0056b3; /* 选择后变色 */
 }
 
 .product-list {
