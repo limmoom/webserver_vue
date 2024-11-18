@@ -1,4 +1,5 @@
 <template>
+  <div style="margin-bottom: 30px;"></div>
   <div class="search-bar">
     <!-- 搜索栏部分 -->
     <div class="search-section">
@@ -10,6 +11,8 @@
       />
       <button @click="onSearch" class="search-button">搜索</button>
     </div>
+
+    <div style="margin-bottom: 30px;"></div>
 
     <!-- 筛选条件部分 -->
     <div class="filter-bar">
@@ -93,7 +96,58 @@
           丽江
         </button>
       </div>
+
+      <!-- 旅游主题筛选 -->
+      <div class="filter-category">
+        <span>旅游主题：</span>
+        <button
+          @click="addFilter('theme', '文化体验')"
+          :class="{'selected': selectedFilters.theme === '文化体验'}"
+        >
+          文化体验
+        </button>
+        <button
+          @click="addFilter('theme', '网红打卡')"
+          :class="{'selected': selectedFilters.theme === '网红打卡'}"
+        >
+          网红打卡
+        </button>
+        <button
+          @click="addFilter('theme', '徒步踏青')"
+          :class="{'selected': selectedFilters.theme === '徒步踏青'}"
+        >
+          徒步踏青
+        </button>
+        <button
+          @click="addFilter('theme', '演出游艺')"
+          :class="{'selected': selectedFilters.theme === '演出游艺'}"
+        >
+          演出游艺
+        </button>
+        <button
+          @click="addFilter('theme', '自然风光')"
+          :class="{'selected': selectedFilters.theme === '自然风光'}"
+        >
+          自然风光
+        </button>
+        <button
+          @click="addFilter('theme', '摄影旅拍')"
+          :class="{'selected': selectedFilters.theme === '摄影旅拍'}"
+        >
+          摄影旅拍
+        </button>
+        <button
+          @click="addFilter('theme', '城市夜游')"
+          :class="{'selected': selectedFilters.theme === '城市夜游'}"
+        >
+          城市夜游
+        </button>
+</div>
+
     </div>
+
+    <!-- 留白一点距离，避免太近 -->
+    <div style="margin-bottom: 30px;"></div>
 
     <!-- 搜索结果部分 -->
     <div class="product-results">
@@ -109,6 +163,9 @@
           <p>{{ product.title }}</p>
         </div>
       </div>
+
+      <div style="margin-bottom: 50px;"></div>
+
       <!-- 分页部分 -->
       <div v-if="!loading" class="pagination">
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 0">上一页</button>
@@ -120,91 +177,91 @@
 </template>
 
 <script>
-export default {
-  name: "SearchBar",
-  data() {
-    return {
-      searchQuery: "",
-      selectedFilters: {}, // 当前筛选条件
-      products: [], // 搜索结果
-      loading: false, // 加载状态
-      currentPage: 0, // 当前页
-      pageSize: 4, // 每页显示的数量
-      totalItems: 20, // 总结果数
-    };
-  },
-  methods: {
-    // 搜索方法
-    onSearch() {
-      this.fetchProducts();
-    },
-    
-    // 处理筛选条件，增加或移除过滤器
-    addFilter(key, value) {
-      if (this.selectedFilters[key] === value) {
-        // 如果条件已经被选中，移除该条件
-        delete this.selectedFilters[key];
-      } else {
-        // 否则，添加该筛选条件
-        this.selectedFilters[key] = value;
-      }
-      this.fetchProducts(); // 更新搜索结果
-    },
-
-    // 请求产品数据
-    async fetchProducts() {
-      this.loading = true;
-      const queryParams = {
-        ...this.selectedFilters,
-        searchQuery: this.searchQuery,
-        page: this.currentPage,
-        size: this.pageSize,
+  export default {
+    name: "SearchBar",
+    data() {
+      return {
+        searchQuery: "",
+        selectedFilters: {}, // 当前筛选条件
+        products: [], // 搜索结果
+        loading: false, // 加载状态
+        currentPage: 0, // 当前页
+        pageSize: 10, // 每页显示的数量
+        totalItems: 20, // 总结果数
       };
-      const queryString = new URLSearchParams(queryParams).toString();
-      try {
-        const response = await fetch(`/api/v1/TravelProduct/search?${queryString}`);
-        const data = await response.json();
-        if (data.success) {
-          this.products = data.data;
-          this.totalItems = this.products.length;
-          //console.log(this.totalItems);
-        } else {
-          console.error("Error fetching products:", data.errorMsg);
-        }
-      } catch (error) {
-        console.error("API 请求失败", error);
-      } finally {
-        this.loading = false;
-      }
     },
-
-    // 分页控制
-    changePage(page) {
-      if (page >= 0 ) {
-        this.currentPage = page;
+    methods: {
+      // 搜索方法
+      onSearch() {
         this.fetchProducts();
-      }
+      },
+      
+      // 处理筛选条件，增加或移除过滤器
+      addFilter(key, value) {
+        if (this.selectedFilters[key] === value) {
+          // 如果条件已经被选中，移除该条件
+          delete this.selectedFilters[key];
+        } else {
+          // 否则，添加该筛选条件
+          this.selectedFilters[key] = value;
+        }
+        this.fetchProducts(); // 更新搜索结果
+      },
+
+      // 请求产品数据
+      async fetchProducts() {
+        this.loading = true;
+        const queryParams = {
+          ...this.selectedFilters,
+          searchQuery: this.searchQuery,
+          page: this.currentPage,
+          size: this.pageSize,
+        };
+        const queryString = new URLSearchParams(queryParams).toString();
+        try {
+          const response = await fetch(`/api/v1/TravelProduct/search?${queryString}`);
+          const data = await response.json();
+          if (data.success) {
+            this.products = data.data;
+            this.totalItems = this.products.length;
+          } else {
+            console.error("Error fetching products:", data.errorMsg);
+          }
+        } catch (error) {
+          console.error("API 请求失败", error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      // 分页控制
+      changePage(page) {
+        if (page >= 0 ) {
+          this.currentPage = page;
+          this.fetchProducts();
+        }
+      },
+
+      // 点击搜索结果跳转到详情页
+      goToProductDetail(productId) {
+        // 使用 Vue Router 跳转到详情页，传递产品 ID
+        this.$router.push(`/product-detail/${productId}`);
+      },
     },
 
-    // 点击搜索结果跳转到详情页
-    goToProductDetail(productId) {
-      // 使用 Vue Router 跳转到详情页，传递产品 ID
-      this.$router.push(`/product-detail/${productId}`);
+    watch: {
+      searchQuery() {
+        this.fetchProducts();
+      },
     },
-  },
+  };
 
-  watch: {
-    searchQuery() {
-      this.fetchProducts();
-    },
-  },
-};
 </script>
 
 <style scoped>
 .search-section {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -213,8 +270,8 @@ export default {
   padding: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  width: 80%;
-  max-width: 400px;
+  width: 120%;
+  max-width: 600px;
 }
 
 .search-button {
@@ -224,6 +281,7 @@ export default {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  margin-left: 1px; /* 搜索框和按钮之间的间距 */
 }
 
 .search-button:hover {
@@ -231,6 +289,7 @@ export default {
 }
 
 .filter-bar {
+  padding-left: 110px;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -263,20 +322,31 @@ export default {
   background-color: #0056b3; /* 选择后变色 */
 }
 
+.product-results {
+  padding-left: 110px;
+}
+
 .product-list {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: flex-start; /* 左对齐 */
+  flex-wrap: wrap; /* 多行显示 */
+  gap: 20px; /* 项目之间的间距 */
 }
 
 .product-summary-block {
-  width: 200px;
-  height: 50px;
+  width: 210px;
+  height: 240px;
   background-color: #ccc;
   text-align: center;
   line-height: 50px;
   border-radius: 4px;
   cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 增加平滑过渡 */
+}
+
+.product-summary-block:hover {
+  transform: scale(1.1); /* 鼠标悬停时放大 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影效果 */
 }
 
 .pagination {
