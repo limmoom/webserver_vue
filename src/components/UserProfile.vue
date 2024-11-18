@@ -50,10 +50,11 @@ export default {
   },
   created() {
     // 从本地存储中获取用户信息
-    const UserId = localStorage.getItem('UserId');
+    const UserId = localStorage.getItem('UserID');
     const Username = localStorage.getItem('Username');
     const Email = localStorage.getItem('Email');
     const CompanyName = localStorage.getItem('companyName');
+    console.log('UserID:', UserId);
 
     if (UserId) {
       this.user.id = UserId;
