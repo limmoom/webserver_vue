@@ -2,47 +2,56 @@
   <div class="user-profile">
     <h2>个人主页</h2>
     <div class="profile-info">
-      <p>
-        <strong>用户名:</strong> {{ user.username }}
-        <button @click="showEditUsername" class="link-button">修改</button>
-      </p>
-      <p>
-        <strong>邮箱:</strong> {{ user.email }}
-        <button @click="showEditEmail" class="link-button">修改</button>
-      </p>
-      <p>
-        <strong>公司:</strong> {{ user.company }}
-        <button @click="showEditCompany" class="link-button">修改</button>
-      </p>
+      <div class="profile-row">
+        <p>
+          <strong>用户名:</strong> {{ user.username }}
+          <button @click="showEditUsername" class="link-button">修改</button>
+        </p>
+        <p>
+          <strong>邮箱:</strong> {{ user.email }}
+          <button @click="showEditEmail" class="link-button">修改</button>
+        </p>
+      </div>
+      <div class="profile-row">
+        <p>
+          <strong>公司:</strong> {{ user.company }}
+          <button @click="showEditCompany" class="link-button">修改</button>
+        </p>
+      </div>
     </div>
     <div class="product-list">
       <h3>发布的旅游产品</h3>
-      <ul>
-        <li v-for="product in products" :key="product.id" class="product-item">
-          <div class="product-header">
+      <div class="product-results">
+        <div v-for="product in products" :key="product.id" class="product-summary-block">
+          <div @click="goToProductDetail(product.id)">
             <h4>{{ product.title }}</h4>
-            <div class="product-actions">
-              <button @click="$emit('edit-product', product.id)" class="link-button">修改产品</button>
-              <button @click="deleteProduct(product.id)" class="link-button">删除产品</button>
-            </div>
+            <!-- <p><strong>发团时间:</strong> {{ product.startDate }}</p>
+            <p><strong>截团时间:</strong> {{ product.endDate }}</p>
+            <p><strong>价格:</strong> {{ product.price }}</p>
+            <p><strong>出发地:</strong> {{ product.departureLocation }}</p>
+            <p><strong>目的地:</strong> {{ product.destination }}</p>
+            <p><strong>产品特色:</strong> {{ product.features }}</p>
+            <p><strong>产品主题:</strong> {{ product.theme }}</p>
+            <p><strong>最大容量:</strong> {{ product.maxCapacity }}</p>
+            <p><strong>产品类型:</strong> {{ product.productType }}</p> -->
           </div>
-          <p><strong>发团时间:</strong> {{ product.startDate }}</p>
-          <p><strong>截团时间:</strong> {{ product.endDate }}</p>
-          <p><strong>价格:</strong> {{ product.price }}</p>
-          <p><strong>出发地:</strong> {{ product.departureLocation }}</p>
-          <p><strong>目的地:</strong> {{ product.destination }}</p>
-          <p><strong>产品特色:</strong> {{ product.features }}</p>
-          <p><strong>产品主题:</strong> {{ product.theme }}</p>
-          <p><strong>最大容量:</strong> {{ product.maxCapacity }}</p>
-          <p><strong>产品类型:</strong> {{ product.productType }}</p>
-        </li>
-      </ul>
+          <div class="button-container">
+            <button @click="$emit('edit-product', product.id)" class="link-button">修改产品</button>
+            <div class="button-spacer"></div> <!-- 添加空格 -->
+            <button @click="deleteProduct(product.id)" class="link-button">删除产品</button>
+          </div>
+        </div>
+      </div>
+      <!-- 分页部分 -->
+      <div v-if="!loading" class="pagination">
+        <button @click="changePage(currentPage - 1)" :disabled="currentPage === 0">上一页</button>
+        <span>第 {{ currentPage + 1 }} 页，共 {{ totalPages }} 页</span>
+        <button @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages - 1">下一页</button>
+      </div>
     </div>
-  </div>
 
-
-  <!-- 自定义修改用户名界面 -->
-  <div v-if="isEditingUsername" class="edit-overlay">
+    <!-- 自定义修改用户名界面 -->
+    <div v-if="isEditingUsername" class="edit-overlay">
       <div class="edit-container">
         <h3>修改用户名</h3>
         <div class="form-group">
@@ -58,10 +67,10 @@
           <button @click="cancelEditUsername" class="btn btn-secondary">取消</button>
         </div>
       </div>
-  </div>
+    </div>
 
-  <!-- 自定义修改邮箱界面 -->
-  <div v-if="isEditingEmail" class="edit-overlay">
+    <!-- 自定义修改邮箱界面 -->
+    <div v-if="isEditingEmail" class="edit-overlay">
       <div class="edit-container">
         <h3>修改邮箱</h3>
         <div class="form-group">
@@ -92,12 +101,12 @@
           <input type="text" id="newCompany" v-model="newCompany" />
         </div>
         <div class="form-actions">
-          <button @click="updateEmail" class="btn btn-primary">确定</button>
-          <button @click="cancelEditEmail" class="btn btn-secondary">取消</button>
+          <button @click="updateCompany" class="btn btn-primary">确定</button>
+          <button @click="cancelEditCompany" class="btn btn-secondary">取消</button>
         </div>
       </div>
+    </div>
   </div>
-
 </template>
 
 <script>
@@ -120,6 +129,11 @@ export default {
       newEmail: '', // 存储新的邮箱
       isEditingCompany: false, // 控制修改公司界面的显示
       newCompany: '', // 存储新的公司名称
+      currentPage: 0, // 当前页
+      pageSize: 10, // 每页显示的数量
+      totalItems: 0, // 总结果数
+      totalPages: 0, // 总页数
+      loading: false, // 加载状态
     };
   },
   created() {
@@ -140,27 +154,33 @@ export default {
   },
   methods: {
     async fetchUserProducts(userId) {
+      this.loading = true;
+      const queryParams = {
+        userId: userId,
+        page: this.currentPage,
+        size: this.pageSize,
+      };
+      const queryString = new URLSearchParams(queryParams).toString();
       try {
-        const response = await axios.get('/api/v1/TravelProduct/search', {
-          params: {
-            userId: userId,
-          },
-        });
+        const response = await axios.get(`/api/v1/TravelProduct/search?${queryString}`);
         if (response.data.success) {
           this.products = response.data.data.data;
+          this.totalItems = response.data.data.total_item;
+          this.totalPages = Math.ceil(this.totalItems / this.pageSize);
         } else {
           alert('获取旅游产品信息失败：' + response.data.errorMsg);
         }
       } catch (error) {
         console.error('获取旅游产品信息请求出错：', error);
         alert('获取旅游产品信息时发生错误，请稍后重试。');
+      } finally {
+        this.loading = false;
       }
     },
-    // editProduct(productId) {
-    //   // 切换到产品编辑组件
-    //   this.$router.push({ name: 'ProductEdit', params: { id: productId } });
-    // },
-
+    editProduct(productId) {
+      // 切换到产品编辑组件
+      this.$router.push({ name: 'ProductEdit', params: { id: productId } });
+    },
     async deleteProduct(productId) {
       if (confirm('确定要删除该产品吗？')) {
         try {
@@ -178,7 +198,6 @@ export default {
         }
       }
     },
-
     showEditUsername() {
       this.newUsername = this.user.username;
       this.isEditingUsername = true;
@@ -205,6 +224,7 @@ export default {
       try {
         const response = await axios.put(`/api/v1/User/${this.user.id}`, userDTO);
         if (response.data.success) {
+          localStorage.setItem('Username', this.newUsername);
           alert('用户名修改成功！');
         } else {
           alert('用户名修改失败：' + response.data.errorMsg);
@@ -214,7 +234,6 @@ export default {
         alert('更新用户名时发生错误，请稍后重试。');
       }
     },
-
     showEditEmail() {
       this.newEmail = this.user.email;
       this.isEditingEmail = true;
@@ -241,6 +260,7 @@ export default {
       try {
         const response = await axios.put(`/api/v1/User/${this.user.id}`, userDTO);
         if (response.data.success) {
+          localStorage.setItem('Email', this.newEmail);
           alert('邮箱修改成功！');
         } else {
           alert('邮箱修改失败：' + response.data.errorMsg);
@@ -276,6 +296,7 @@ export default {
       try {
         const response = await axios.put(`/api/v1/User/${this.user.id}`, userDTO);
         if (response.data.success) {
+          localStorage.setItem('companyName', this.newCompany);
           alert('公司名称修改成功！');
         } else {
           alert('公司名称修改失败：' + response.data.errorMsg);
@@ -285,103 +306,25 @@ export default {
         alert('更新公司名称时发生错误，请稍后重试。');
       }
     },
+    goToProductDetail(productId) {
+      // 使用 Vue Router 跳转到详情页，传递产品 ID
+      this.$router.push(`/product-detail/${productId}`);
+    },
+    changePage(page) {
+      if (page >= 0 && page < this.totalPages) {
+        this.currentPage = page;
+        this.fetchUserProducts(this.user.id); // 每次分页时，根据当前页码重新请求数据
+      }
+    },
   },
 };
 </script>
 
 <style scoped>
 .user-profile {
-  padding: 20px;
-  background-color: #f0f8ff;
-  /* 浅蓝色背景 */
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 900px;
-  margin: 0 auto;
-  width: 80%;
-  height: auto;
-  /* display: flex; */
-  overflow: hidden;
-  /* 禁用滚动 */
-  font-family: 'Arial', sans-serif;
-  /* 使用无衬线字体 */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.user-profile h2 {
-  color: #333;
-  text-align: center;
-  font-size: 24px;
-  /* 标题字体大小 */
-  margin-bottom: 20px;
-  /* 标题与内容之间的间距 */
-}
-
-.profile-info {
-  display: flex;
-  justify-content: space-between;
-  width: 70%;
-}
-
-.profile-info p {
-  margin: 10px 0;
-  font-size: 16px;
-  text-align: left;
-}
-
-.profile-info strong {
-  color: #333;
-}
-
-.product-list {
-  margin-top: 20px;
-  width: 60%;
-  /* display: flex; */
-  align-items: center;
-  flex-direction: column;
-}
-
-.product-list h3 {
-  color: #333;
-  font-size: 20px;
-  margin-bottom: 10px;
-  /* align-items: center; */
-}
-
-.product-list ul {
-  list-style: none;
-  padding: 0;
-}
-
-.product-list li {
-  background-color: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
-  text-align: left;
-  position: relative;
-  /* 确保按钮定位正确 */
-}
-
-.product-list h4 {
-  margin: 0 0 10px 0;
-  font-size: 18px;
-}
-
-.product-list p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-
-.product-actions {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 10px;
+  padding-left: 110px;
+  padding-right: 110px;
+  padding-top: 20px;
 }
 
 .link-button {
@@ -394,7 +337,7 @@ export default {
   font: inherit;
 }
 
-.link-button .link-button:hover {
+.link-button:hover {
   color: #0056b3;
 }
 
@@ -450,20 +393,109 @@ export default {
   color: white;
 }
 
-/* .btn-primary:hover {
+.btn-primary:hover {
   background-color: #0056b3;
-} */
+}
 
 .btn-secondary {
   background-color: #dc3545;
   color: white;
 }
 
-/* .btn-secondary:hover {
-  background-color: #5a6268;
-} */
+.btn-secondary:hover {
+  background-color: #c82333;
+}
 
-.form-actions button:hover {
-  filter: brightness(0.8);
+.product-results {
+  display: flex;
+  justify-content: flex-start;
+  /* 左对齐 */
+  flex-wrap: wrap;
+  /* 多行显示 */
+  gap: 20px;
+  /* 项目之间的间距 */
+}
+
+.product-summary-block {
+  width: 210px;
+  height: 240px;
+  background-color: #ccc;
+  text-align: center;
+  line-height: 50px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* 增加平滑过渡 */
+}
+
+.product-summary-block:hover {
+  transform: scale(1.1);
+  /* 鼠标悬停时放大 */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  /* 添加阴影效果 */
+}
+
+.product-actions {
+  position: fixed;
+  /* 固定位置 */
+  bottom: 20px;
+  /* 距离底部 20px */
+  right: 20px;
+  /* 距离右侧 20px */
+  display: flex;
+  gap: 10px;
+  /* 按钮之间的间距 */
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.profile-info {
+  display: flex;
+  flex-wrap: wrap;
+  /* gap: 5px; */
+  margin-bottom: 20px;
+  width: 100%;
+  /* 确保父容器宽度为100% */
+  flex-direction: column;
+}
+
+.profile-row {
+  display: flex;
+  flex: 1 1 45%;
+  /* 设置 flex-basis 为 45% */
+  max-width: 45%;
+  /* 设置最大宽度为 45% */
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.button-spacer {
+  width: 10px; /* 根据需要调整空格宽度 */
+}
+
+.button-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
