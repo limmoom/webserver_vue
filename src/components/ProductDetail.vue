@@ -1,20 +1,47 @@
 <template>
     <div class="product-detail">
-        <h2>产品详情</h2>
         <div v-if="product" class="product-info">
-            <p><strong>标题：</strong>{{ product.title }}</p>
-            <p><strong>出发日期：</strong>{{ product.startDate }}</p>
-            <p><strong>结束日期：</strong>{{ product.endDate }}</p>
-            <p><strong>特色：</strong>{{ product.features }}</p>
-            <p><strong>主题：</strong>{{ product.theme }}</p>
-            <p><strong>出发地点：</strong>{{ product.departureLocation }}</p>
-            <p><strong>目的地：</strong>{{ product.destination }}</p>
-            <p><strong>最大容量：</strong>{{ product.maxCapacity }}</p>
-            <p><strong>产品类型：</strong>{{ product.productType }}</p>
-            <p><strong>价格：</strong>¥{{ product.price }}</p>
-            <p><strong>创建时间：</strong>{{ product.createdAt }}</p>
-            <p><strong>更新时间：</strong>{{ product.updatedAt }}</p>
+            <!-- 左侧图片 -->
+            <div class="product-image"></div>
+            <!-- 右侧标题和价格 -->
+            <div class="product-summary">
+                <h3>{{ product.title }}</h3>
+                <p><strong>价格：</strong>¥{{ product.price }}</p>
+            </div>
+
+            <!-- 分割线 -->
+            <div class="tableTitle"></div>
+
+            <div class="detail_font"><h4>产品信息</h4></div>
+
+            <!-- 产品基本信息 -->
+            <div class="product-details">
+                <div class="info-column left-column">
+                    <p><strong>出发日期：</strong>{{ product.startDate }}</p>
+                    <p><strong>结束日期：</strong>{{ product.endDate }}</p>
+                    <p><strong>出发地：</strong>{{ product.departureLocation }}</p>
+                    <p><strong>目的地：</strong>{{ product.destination }}</p>
+                    <p><strong>最大容量：</strong>{{ product.maxCapacity }}</p>
+                </div>
+                <div class="info-column right-column">
+                    <p><strong>特色：</strong>{{ product.features }}</p>
+                    <p><strong>主题：</strong>{{ product.theme }}</p>
+                    <p><strong>产品类型：</strong>{{ product.productType }}</p>
+                </div>
+            </div>
         </div>
+
+        <!-- 分割线 -->
+        <div class="tableTitle"></div>
+
+        <!-- 发布者信息部分 -->
+        <div v-if="publisher" class="publisher-info">
+            <h4>发布者信息</h4>
+            <p><strong>用户名：</strong>{{ publisher.name }}</p>
+            <p><strong>邮箱：</strong>{{ publisher.email }}</p>
+            <p><strong>公司名称：</strong>{{ publisher.companyName }}</p>
+        </div>
+
         <div v-else>
             <p>加载产品信息中...</p>
         </div>
@@ -29,28 +56,44 @@ export default {
     data() {
         return {
             product: null,
+            publisher: null,  // 新增发布者信息
             errorMessage: null,
         };
     },
     mounted() {
-        // 获取路由参数中的 id，并调用 fetchProductDetails 方法
         const productId = this.$route.params.id;
         this.fetchProductDetails(productId);
     },
     methods: {
         async fetchProductDetails(productId) {
             try {
-                // 发送 GET 请求获取产品信息
+                // 获取产品信息
                 const response = await axios.get(`/api/v1/TravelProduct/${productId}`);
                 
                 if (response.data.success) {
-                    this.product = response.data.data; // 获取返回的产品数据
+                    this.product = response.data.data;
+                    // 获取发布者信息
+                    this.fetchPublisherInfo(this.product.userId);
                 } else {
-                    this.errorMessage = response.data.errorMsg; // 获取错误信息
+                    this.errorMessage = response.data.errorMsg;
                 }
             } catch (error) {
                 console.error('获取产品信息时出错：', error);
                 this.errorMessage = '加载产品信息失败，请稍后重试。';
+            }
+        },
+        
+        async fetchPublisherInfo(userId) {
+            try {
+                const response = await axios.get(`/api/v1/User/${userId}`);
+                
+                if (response.data.success) {
+                    this.publisher = response.data.data;
+                } else {
+                    console.error('获取发布者信息失败：', response.data.errorMsg);
+                }
+            } catch (error) {
+                console.error('获取发布者信息时出错：', error);
             }
         }
     }
@@ -62,38 +105,119 @@ export default {
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 8px;
-    max-width: 600px;
+    max-width: 800px;
     margin: 20px auto;
     font-family: 'Arial', sans-serif;
 }
 
-.product-detail h2 {
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 20px;
+.product-info {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.product-image {
+    background: url('https://youimg1.c-ctrip.com/target/0102a120004fhqcagB7E5_D_10000_1200.jpg?proc=autoorient');
+    background-size: contain;
+    width: 300px;
+    height: 200px;
+}
+
+.product-summary {
+    padding-left: 30px;
+    flex: 2;
+    min-width: 250px;
+}
+
+.product-summary h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
     color: #333;
 }
 
-.product-info p {
+.product-summary p {
     font-size: 16px;
-    line-height: 1.5;
-    margin: 10px 0;
-}
-
-.product-info strong {
     color: #007bff;
-    font-weight: bold;
 }
 
-.product-info {
-    background-color: #ffffff;
+.tableTitle {
+    position: relative;
+    margin-top: 30px;
+    width: 800px;
+    height: 1px;
+    background-color: #d4d4d4;
+    text-align: center;
+    font-size: 16px;
+    color: rgba(101, 101, 101, 1);
+}
+
+.detail_font {
+    margin-top: 30px;
+    padding-left: 20px;
+    font-size: 18px;
+}
+
+.product-details {
+    display: flex;
+    justify-content: space-between;
+}
+
+.info-column {
+    flex: 1;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.left-column {
+    margin-right: 40px; /* 左侧列增加右边距 */
+    gap: 10px;
+}
+
+.right-column {
+    gap: 20px;
+}
+
+.info-column p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.info-column strong {
+    color: #007bff;
+}
+
+/* 发布者信息部分 */
+.publisher-info {
+    margin-top: 20px;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.product-info p {
+.publisher-info h4 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.publisher-info p {
+    font-size: 16px;
     color: #555;
 }
 
+.publisher-info strong {
+    color: #007bff;
+}
+
+/* 响应式布局调整 */
+@media (max-width: 768px) {
+    .product-details {
+        flex-direction: column;
+    }
+
+    .info-column {
+        margin-right: 0;
+        margin-bottom: 20px;
+    }
+}
 </style>

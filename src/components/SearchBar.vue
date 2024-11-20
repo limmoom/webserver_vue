@@ -142,8 +142,7 @@
         >
           城市夜游
         </button>
-</div>
-
+      </div>
     </div>
 
     <!-- 留白一点距离，避免太近 -->
@@ -170,7 +169,7 @@
       <div v-if="!loading" class="pagination">
         <button @click="changePage(currentPage - 1)" :disabled="currentPage === 0">上一页</button>
         <span>第 {{ currentPage + 1 }} 页</span>
-        <button @click="changePage(currentPage + 1)" >下一页</button>
+        <button @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages - 1">下一页</button>
       </div>
     </div>
   </div>
@@ -187,7 +186,8 @@
         loading: false, // 加载状态
         currentPage: 0, // 当前页
         pageSize: 10, // 每页显示的数量
-        totalItems: 20, // 总结果数
+        totalItems: 0, // 总结果数
+        totalPages: 0, // 总页数
       };
     },
     methods: {
@@ -195,7 +195,7 @@
       onSearch() {
         this.fetchProducts();
       },
-      
+
       // 处理筛选条件，增加或移除过滤器
       addFilter(key, value) {
         if (this.selectedFilters[key] === value) {
@@ -208,12 +208,11 @@
         this.fetchProducts(); // 更新搜索结果
       },
 
-      // 请求产品数据
-      async fetchProducts() {
+      // 请求产品数据，按照筛选条件
+      async fetchProductsByFilter() {
         this.loading = true;
         const queryParams = {
           ...this.selectedFilters,
-          searchQuery: this.searchQuery,
           page: this.currentPage,
           size: this.pageSize,
         };
@@ -222,8 +221,9 @@
           const response = await fetch(`/api/v1/TravelProduct/search?${queryString}`);
           const data = await response.json();
           if (data.success) {
-            this.products = data.data;
-            this.totalItems = this.products.length;
+            this.products = data.data.data;
+            this.totalItems = data.data.total_item;
+            this.totalPages = Math.ceil(this.totalItems / this.pageSize);
           } else {
             console.error("Error fetching products:", data.errorMsg);
           }
@@ -234,11 +234,50 @@
         }
       },
 
+      // 请求产品数据，按照搜索关键字
+      async fetchProductsBySearch() {
+        this.loading = true;
+        const queryParams = {
+          ...this.selectedFilters,
+          keyword: this.searchQuery,
+          page: this.currentPage,
+          size: this.pageSize,
+        };
+        const queryString = new URLSearchParams(queryParams).toString();
+        try {
+          const response = await fetch(`/api/v1/TravelProduct/searchByKeyword?${queryString}`);
+          console.log(`/api/v1/TravelProduct/searchByKeyword?${queryString}`);
+          const data = await response.json();
+          if (data.success) {
+            this.products = data.data.content;
+            this.totalItems = data.data.totalElements;
+            this.totalPages = data.data.totalPages;
+          } else {
+            console.error("Error fetching products:", data.errorMsg);
+          }
+        } catch (error) {
+          console.error("API 请求失败", error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      // 判断是否使用筛选或搜索
+      async fetchProducts() {
+        if (this.searchQuery.trim()) {
+          // 如果搜索框有内容，调用搜索 API
+          this.fetchProductsBySearch();
+        } else {
+          // 如果搜索框为空，调用筛选 API
+          this.fetchProductsByFilter();
+        }
+      },
+
       // 分页控制
       changePage(page) {
-        if (page >= 0 ) {
+        if (page >= 0 && page < this.totalPages) {
           this.currentPage = page;
-          this.fetchProducts();
+          this.fetchProducts(); // 每次分页时，根据当前页码重新请求数据
         }
       },
 
@@ -250,13 +289,23 @@
     },
 
     watch: {
+      // 监听 searchQuery 和 selectedFilters 的变化，自动触发搜索
       searchQuery() {
-        this.fetchProducts();
+        this.currentPage = 0; // 每次搜索时，重置为第一页
+        this.fetchProducts(); // 触发数据请求
+      },
+
+      selectedFilters: {
+        handler() {
+          this.currentPage = 0; // 每次筛选条件变化时，重置为第一页
+          this.fetchProducts(); // 触发数据请求
+        },
+        deep: true, // 深度监听 selectedFilters 对象的变化
       },
     },
   };
-
 </script>
+
 
 <style scoped>
 .search-section {
