@@ -2,18 +2,24 @@
   <div class="user-profile">
     <div>
       <button @click="goBack" class="arrow-button">← 返回</button>
-  </div>
-    <h2>个人主页</h2>
+    </div>
+    <div class="header-row">
+      <h2>个人主页</h2>
+      <div class="header-buttons">
+        <button @click="sendMessage" class="message-button">发消息</button>
+        <button @click="subscribe" class="subscribe-button">订阅</button>
+      </div>
+    </div>
     <div class="profile-info">
       <div class="profile-row">
-        <p>
-          <strong>用户名:</strong> {{ user.username }}
-          <!-- <button @click="showEditUsername" class="link-button">修改</button> -->
-        </p>
-        <p>
-          <strong>邮箱:</strong> {{ user.email }}
-          <!-- <button @click="showEditEmail" class="link-button">修改</button> -->
-        </p>
+          <p>
+            <strong>用户名:</strong> {{ user.username }}
+            <!-- <button @click="showEditUsername" class="link-button">修改</button> -->
+          </p>
+          <p>
+            <strong>邮箱:</strong> {{ user.email }}
+            <!-- <button @click="showEditEmail" class="link-button">修改</button> -->
+          </p>
       </div>
       <div class="profile-row">
         <p>
@@ -38,7 +44,7 @@
         <button @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages - 1">下一页</button>
       </div>
     </div>
-</div>
+  </div>
 </template>
 
 <script>
@@ -62,7 +68,7 @@ export default {
       isEditingCompany: false, // 控制修改公司界面的显示
       newCompany: '', // 存储新的公司名称
       currentPage: 0, // 当前页
-      pageSize: 6, // 每页显示的数量
+      pageSize: 10, // 每页显示的数量
       totalItems: 0, // 总结果数
       totalPages: 0, // 总页数
       loading: false, // 加载状态
@@ -255,6 +261,14 @@ export default {
         this.fetchUserProducts(this.user.id); // 每次分页时，根据当前页码重新请求数据
       }
     },
+    sendMessage() {
+      // 这里可以添加发送消息的逻辑
+      alert('发送消息功能尚未实现');
+    },
+    subscribe() {
+      // 这里可以添加订阅的逻辑
+      alert('订阅功能尚未实现');
+    }
   },
 };
 </script>
@@ -419,9 +433,9 @@ export default {
 
 .profile-row {
   display: flex;
-  flex: 1 1 45%;
+  flex: 1 1 50%;
   /* 设置 flex-basis 为 45% */
-  max-width: 45%;
+  max-width: 50%;
   /* 设置最大宽度为 45% */
   justify-content: space-between;
   align-items: center;
@@ -450,5 +464,40 @@ export default {
 }
 .arrow-button:hover {
   color: darkblue;
+}
+
+.message-button:hover {
+  background-color: #0056b3;
+}
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.profile-details {
+  flex: 1;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+  width: 10%;
+}
+
+.message-button, .subscribe-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 100px; /* 设置按钮宽度 */
+  text-align: center;
+}
+
+.subscribe-button:hover {
+  background-color: #0056b3;
 }
 </style>
