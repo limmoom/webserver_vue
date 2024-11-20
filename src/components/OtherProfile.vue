@@ -1,21 +1,24 @@
 <template>
   <div class="user-profile">
+    <div>
+      <button @click="goBack" class="arrow-button">← 返回</button>
+  </div>
     <h2>个人主页</h2>
     <div class="profile-info">
       <div class="profile-row">
         <p>
           <strong>用户名:</strong> {{ user.username }}
-          <button @click="showEditUsername" class="link-button">修改</button>
+          <!-- <button @click="showEditUsername" class="link-button">修改</button> -->
         </p>
         <p>
           <strong>邮箱:</strong> {{ user.email }}
-          <button @click="showEditEmail" class="link-button">修改</button>
+          <!-- <button @click="showEditEmail" class="link-button">修改</button> -->
         </p>
       </div>
       <div class="profile-row">
         <p>
           <strong>公司:</strong> {{ user.company }}
-          <button @click="showEditCompany" class="link-button">修改</button>
+          <!-- <button @click="showEditCompany" class="link-button">修改</button> -->
         </p>
       </div>
     </div>
@@ -25,20 +28,6 @@
         <div v-for="product in products" :key="product.id" class="product-summary-block">
           <div @click="goToProductDetail(product.id)">
             <h4>{{ product.title }}</h4>
-            <!-- <p><strong>发团时间:</strong> {{ product.startDate }}</p>
-            <p><strong>截团时间:</strong> {{ product.endDate }}</p>
-            <p><strong>价格:</strong> {{ product.price }}</p>
-            <p><strong>出发地:</strong> {{ product.departureLocation }}</p>
-            <p><strong>目的地:</strong> {{ product.destination }}</p>
-            <p><strong>产品特色:</strong> {{ product.features }}</p>
-            <p><strong>产品主题:</strong> {{ product.theme }}</p>
-            <p><strong>最大容量:</strong> {{ product.maxCapacity }}</p>
-            <p><strong>产品类型:</strong> {{ product.productType }}</p> -->
-          </div>
-          <div class="button-container">
-            <button @click="$emit('edit-product', product.id)" class="link-button">修改产品</button>
-            <div class="button-spacer"></div> <!-- 添加空格 -->
-            <button @click="deleteProduct(product.id)" class="link-button">删除产品</button>
           </div>
         </div>
       </div>
@@ -49,64 +38,7 @@
         <button @click="changePage(currentPage + 1)" :disabled="currentPage >= totalPages - 1">下一页</button>
       </div>
     </div>
-
-    <!-- 自定义修改用户名界面 -->
-    <div v-if="isEditingUsername" class="edit-overlay">
-      <div class="edit-container">
-        <h3>修改用户名</h3>
-        <div class="form-group">
-          <label for="currentUsername">当前用户名:</label>
-          <input type="text" id="currentUsername" v-model="user.username" disabled />
-        </div>
-        <div class="form-group">
-          <label for="newUsername">新用户名:</label>
-          <input type="text" id="newUsername" v-model="newUsername" />
-        </div>
-        <div class="form-actions">
-          <button @click="updateUsername" class="btn btn-primary">确定</button>
-          <button @click="cancelEditUsername" class="btn btn-secondary">取消</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 自定义修改邮箱界面 -->
-    <div v-if="isEditingEmail" class="edit-overlay">
-      <div class="edit-container">
-        <h3>修改邮箱</h3>
-        <div class="form-group">
-          <label for="currentEmail">当前邮箱:</label>
-          <input type="text" id="currentEmail" v-model="user.email" disabled />
-        </div>
-        <div class="form-group">
-          <label for="newEmail">新邮箱:</label>
-          <input type="text" id="newEmail" v-model="newEmail" />
-        </div>
-        <div class="form-actions">
-          <button @click="updateEmail" class="btn btn-primary">确定</button>
-          <button @click="cancelEditEmail" class="btn btn-secondary">取消</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 自定义修改公司界面 -->
-    <div v-if="isEditingCompany" class="edit-overlay">
-      <div class="edit-container">
-        <h3>修改公司</h3>
-        <div class="form-group">
-          <label for="currentCompany">当前公司:</label>
-          <input type="text" id="currentCompany" v-model="user.company" disabled />
-        </div>
-        <div class="form-group">
-          <label for="newCompany">新公司:</label>
-          <input type="text" id="newCompany" v-model="newCompany" />
-        </div>
-        <div class="form-actions">
-          <button @click="updateCompany" class="btn btn-primary">确定</button>
-          <button @click="cancelEditCompany" class="btn btn-secondary">取消</button>
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
 </template>
 
 <script>
@@ -138,21 +70,28 @@ export default {
   },
   created() {
     // 从本地存储中获取用户信息
-    const UserId = localStorage.getItem('UserID');
-    const Username = localStorage.getItem('Username');
-    const Email = localStorage.getItem('Email');
-    const CompanyName = localStorage.getItem('companyName');
-    console.log('UserID:', UserId);
+    const UserId = this.$route.params.id;
+    this.fetchUserInfo(UserId);
 
     if (UserId) {
-      this.user.id = UserId;
-      this.user.username = Username;
-      this.user.email = Email;
-      this.user.company = CompanyName ? CompanyName : 'unknown';
       this.fetchUserProducts(UserId); // 获取用户发布的旅游产品信息
     }
   },
   methods: {
+    goBack() {
+      this.$router.go(-1);
+    },
+    async fetchUserInfo(UserId){
+      const response = await axios.get(`/api/v1/User/${UserId}`);
+      console.log(response);
+      if (response.data.success) {
+        this.user.username = response.data.data.name;
+        this.user.email = response.data.data.email;
+        this.user.company = response.data.data.companyName;
+      } else {
+        alert('获取用户信息失败：' + response.data.errorMsg);
+      }
+    },
     async fetchUserProducts(userId) {
       this.loading = true;
       const queryParams = {
@@ -497,5 +436,19 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.arrow-button {
+  background: none;
+  border: none;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  margin: 10px 0;
+}
+.arrow-button:hover {
+  color: darkblue;
 }
 </style>

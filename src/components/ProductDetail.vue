@@ -1,5 +1,8 @@
-<template>
+<template>    
     <div class="product-detail">
+        <div>
+      <button @click="goBack" class="arrow-button">← 返回</button>
+    </div>
         <div v-if="product" class="product-info">
             <!-- 左侧图片 -->
             <div class="product-image"></div>
@@ -12,7 +15,9 @@
             <!-- 分割线 -->
             <div class="tableTitle"></div>
 
-            <div class="detail_font"><h4>产品信息</h4></div>
+            <div class="detail_font">
+                <h4>产品信息</h4>
+            </div>
 
             <!-- 产品基本信息 -->
             <div class="product-details">
@@ -37,7 +42,11 @@
         <!-- 发布者信息部分 -->
         <div v-if="publisher" class="publisher-info">
             <h4>发布者信息</h4>
-            <p><strong>用户名：</strong>{{ publisher.name }}</p>
+            <p><strong>用户名：</strong>
+                <router-link :to="{ name: 'OtherProfile', params: { id: publisher.id } }">
+                    {{ publisher.name }}
+                </router-link>
+            </p>
             <p><strong>邮箱：</strong>{{ publisher.email }}</p>
             <p><strong>公司名称：</strong>{{ publisher.companyName }}</p>
         </div>
@@ -65,11 +74,14 @@ export default {
         this.fetchProductDetails(productId);
     },
     methods: {
+        goBack() {
+            this.$router.go(-1);
+        },
         async fetchProductDetails(productId) {
             try {
                 // 获取产品信息
                 const response = await axios.get(`/api/v1/TravelProduct/${productId}`);
-                
+
                 if (response.data.success) {
                     this.product = response.data.data;
                     // 获取发布者信息
@@ -82,11 +94,11 @@ export default {
                 this.errorMessage = '加载产品信息失败，请稍后重试。';
             }
         },
-        
+
         async fetchPublisherInfo(userId) {
             try {
                 const response = await axios.get(`/api/v1/User/${userId}`);
-                
+
                 if (response.data.success) {
                     this.publisher = response.data.data;
                 } else {
@@ -169,7 +181,8 @@ export default {
 }
 
 .left-column {
-    margin-right: 40px; /* 左侧列增加右边距 */
+    margin-right: 40px;
+    /* 左侧列增加右边距 */
     gap: 10px;
 }
 
@@ -207,6 +220,20 @@ export default {
 
 .publisher-info strong {
     color: #007bff;
+}
+
+.arrow-button {
+  background: none;
+  border: none;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0;
+  margin: 10px 0;
+}
+.arrow-button:hover {
+  color: darkblue;
 }
 
 /* 响应式布局调整 */
