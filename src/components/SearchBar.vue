@@ -185,7 +185,7 @@
         products: [], // 搜索结果
         loading: false, // 加载状态
         currentPage: 0, // 当前页
-        pageSize: 12, // 每页显示的数量
+        pageSize: 10, // 每页显示的数量
         totalItems: 0, // 总结果数
         totalPages: 0, // 总页数
       };

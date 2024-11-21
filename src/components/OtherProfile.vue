@@ -31,8 +31,8 @@
     <div class="product-list">
       <h3>发布的旅游产品</h3>
       <div class="product-results">
-        <div v-for="product in products" :key="product.id" class="product-summary-block">
-          <div @click="goToProductDetail(product.id)">
+        <div v-for="product in products" :key="product.id" class="product-summary-block" @click="goToProductDetail(product.id)">
+          <div>
             <h4>{{ product.title }}</h4>
           </div>
         </div>
@@ -68,7 +68,7 @@ export default {
       isEditingCompany: false, // 控制修改公司界面的显示
       newCompany: '', // 存储新的公司名称
       currentPage: 0, // 当前页
-      pageSize: 10, // 每页显示的数量
+      pageSize: 12, // 每页显示的数量
       totalItems: 0, // 总结果数
       totalPages: 0, // 总页数
       loading: false, // 加载状态
