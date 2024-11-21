@@ -4,6 +4,8 @@
       <button @click="toggleSidebar" class="sidebar-toggle-button">
         {{ isSidebarCollapsed ? '展开侧边栏' : '收起侧边栏' }}
       </button>
+      <div class="spacer"></div> <!-- 占位元素，帮助推送铃铛图标到右侧 -->
+      <i class="fa fa-bell"></i> <!-- 铃铛图标 -->
       <button @click="showUserProfile" class="profile-button">
         个人主页
       </button>
@@ -11,8 +13,8 @@
     <div class="content-container">
       <aside v-if="!isSidebarCollapsed" class="sidebar">
         <ul>
-          <li><a href="#" @click.prevent="currentComponent = 'SearchBar'">产品信息</a></li>
-          <li><a href="#" @click.prevent="currentComponent = ''">菜单项2</a></li>
+          <li><a href="#" @click.prevent="currentComponent = 'SearchBar'">产品搜索</a></li>
+          <li><a href="#" @click.prevent="currentComponent = 'Subscribe'">我的订阅</a></li>
           <li><a href="#" @click.prevent="currentComponent = 'UserProfile'">个人主页</a></li>
           <li><a href="#" @click.prevent="currentComponent = 'ProductPublish'">新信息发布</a></li>
         </ul>
@@ -64,7 +66,7 @@ export default {
       this.currentComponent = 'UserProfile';
     },
   },
-};  
+};
 </script>
 
 <style scoped>
@@ -76,11 +78,22 @@ export default {
 
 .top-bar {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-between; /* 保证左右两端的元素对齐 */
   align-items: center;
   background-color: #007bff; /* 蓝色背景 */
   color: white;
   padding: 10px 20px;
+}
+
+.spacer {
+  flex-grow: 1; /* 使用占位元素推送后续元素到右边 */
+}
+
+i {
+  font-size: 20px;
+  color: #f39c12;
+  cursor: pointer;
+  margin-right: 10px; /* 可以添加一些右边距 */
 }
 
 .sidebar-toggle-button,

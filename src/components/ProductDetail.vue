@@ -164,6 +164,7 @@ export default {
 }
 
 .detail_font {
+    width: 800px;
     margin-top: 30px;
     padding-left: 20px;
     font-size: 18px;
@@ -181,12 +182,12 @@ export default {
 }
 
 .left-column {
-    margin-right: 40px;
-    /* 左侧列增加右边距 */
+    width: 360px;
     gap: 10px;
 }
 
 .right-column {
+    width: 360px;
     gap: 20px;
 }
 
