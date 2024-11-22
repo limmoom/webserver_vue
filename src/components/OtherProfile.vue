@@ -12,14 +12,14 @@
     </div>
     <div class="profile-info">
       <div class="profile-row">
-          <p>
-            <strong>用户名:</strong> {{ user.username }}
-            <!-- <button @click="showEditUsername" class="link-button">修改</button> -->
-          </p>
-          <p>
-            <strong>邮箱:</strong> {{ user.email }}
-            <!-- <button @click="showEditEmail" class="link-button">修改</button> -->
-          </p>
+        <p>
+          <strong>用户名:</strong> {{ user.username }}
+          <!-- <button @click="showEditUsername" class="link-button">修改</button> -->
+        </p>
+        <p>
+          <strong>邮箱:</strong> {{ user.email }}
+          <!-- <button @click="showEditEmail" class="link-button">修改</button> -->
+        </p>
       </div>
       <div class="profile-row">
         <p>
@@ -31,7 +31,8 @@
     <div class="product-list">
       <h3>发布的旅游产品</h3>
       <div class="product-results">
-        <div v-for="product in products" :key="product.id" class="product-summary-block" @click="goToProductDetail(product.id)">
+        <div v-for="product in products" :key="product.id" class="product-summary-block"
+          @click="goToProductDetail(product.id)">
           <div>
             <h4>{{ product.title }}</h4>
           </div>
@@ -77,6 +78,7 @@ export default {
   created() {
     // 从本地存储中获取用户信息
     const UserId = this.$route.params.id;
+    this.user.id = UserId;
     this.fetchUserInfo(UserId);
 
     if (UserId) {
@@ -87,7 +89,7 @@ export default {
     goBack() {
       this.$router.go(-1);
     },
-    async fetchUserInfo(UserId){
+    async fetchUserInfo(UserId) {
       const response = await axios.get(`/api/v1/User/${UserId}`);
       console.log(response);
       if (response.data.success) {
@@ -263,7 +265,17 @@ export default {
     },
     sendMessage() {
       // 这里可以添加发送消息的逻辑
-      alert('发送消息功能尚未实现');
+      // alert('发送消息功能尚未实现');
+      const userId = this.user.id;
+      console.log('userId:', userId);
+
+      this.$router.push({
+        name: 'mainpage',
+        query: {
+          component: 'ChatPage',
+          userId: userId
+        }
+      });
     },
     subscribe() {
       // 这里可以添加订阅的逻辑
@@ -443,7 +455,8 @@ export default {
 }
 
 .button-spacer {
-  width: 10px; /* 根据需要调整空格宽度 */
+  width: 10px;
+  /* 根据需要调整空格宽度 */
 }
 
 .button-container {
@@ -462,6 +475,7 @@ export default {
   padding: 0;
   margin: 10px 0;
 }
+
 .arrow-button:hover {
   color: darkblue;
 }
@@ -469,6 +483,7 @@ export default {
 .message-button:hover {
   background-color: #0056b3;
 }
+
 .header-row {
   display: flex;
   justify-content: space-between;
@@ -486,14 +501,16 @@ export default {
   width: 10%;
 }
 
-.message-button, .subscribe-button {
+.message-button,
+.subscribe-button {
   background-color: #007bff;
   color: white;
   border: none;
   padding: 5px 10px;
   cursor: pointer;
   border-radius: 4px;
-  width: 100px; /* 设置按钮宽度 */
+  width: 100px;
+  /* 设置按钮宽度 */
   text-align: center;
 }
 

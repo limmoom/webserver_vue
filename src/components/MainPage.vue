@@ -13,14 +13,15 @@
     <div class="content-container">
       <aside v-if="!isSidebarCollapsed" class="sidebar">
         <ul>
-          <li><a href="#" @click.prevent="currentComponent = 'SearchBar'">产品搜索</a></li>
-          <li><a href="#" @click.prevent="currentComponent = 'Subscribe'">我的订阅</a></li>
-          <li><a href="#" @click.prevent="currentComponent = 'UserProfile'">个人主页</a></li>
-          <li><a href="#" @click.prevent="currentComponent = 'ProductPublish'">新信息发布</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('SearchBar')">产品搜索</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('Subscribe')">我的订阅</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('UserProfile')">个人主页</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('ChatPage')">聊天信息</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('ProductPublish')">新信息发布</a></li>
         </ul>
       </aside>
       <div class="content">
-        <component :is="currentComponent" @edit-product="handleEditProduct" @go-back="handleGoBack" />
+        <component :is="currentComponent" v-bind="currentComponentProps"></component>
       </div>
     </div>
   </div>
@@ -32,6 +33,7 @@ import SearchBar from '@/components/SearchBar.vue';
 import ProductPublish from './ProductPublish.vue';
 import ProductDetail from './ProductDetail.vue';
 import ProductUpdate from './ProductUpdate.vue';
+import ChatPage from './ChatPage.vue';
 
 export default {
   name: 'MainPage',
@@ -41,13 +43,45 @@ export default {
     ProductPublish,
     ProductDetail,
     ProductUpdate,
+    ChatPage,
   },
   data() {
     return {
-      isSidebarCollapsed: false,
       currentComponent: 'SearchBar',
+      userId: null,
+      isSidebarCollapsed: false,
       productId: '',
     };
+  },
+  watch: {
+    '$route.query.component': {
+      immediate: true,
+      handler(newComponent) {
+        console.log('检测到路由参数 component 变化：', newComponent);
+        if (newComponent) {
+          this.currentComponent = newComponent;
+        } else {
+          // 设置默认组件
+          this.currentComponent = 'SearchBar';
+        }
+      }
+    },
+    '$route.query.userId': {
+      immediate: true,
+      handler(newUserId) {
+        console.log('检测到路由参数 userId 变化：', newUserId);
+        this.userId = newUserId;
+      }
+    }
+  },
+  computed: {
+    currentComponentProps() {
+      if (this.currentComponent === 'ChatPage') {
+        return { userId: this.userId };
+      } else {
+        return {};
+      }
+    },
   },
   methods: {
     toggleSidebar() {
@@ -65,6 +99,14 @@ export default {
     handleGoBack() {
       this.currentComponent = 'UserProfile';
     },
+    navigateToComponent(componentName) {
+      this.$router.push({
+      name: 'mainpage',
+      query: {
+        component: componentName
+      }
+    });
+    },
   },
 };
 </script>
@@ -78,7 +120,7 @@ export default {
 
 .top-bar {
   display: flex;
-  justify-content: space-between; /* 保证左右两端的元素对齐 */
+  justify-content: space-between; /* 保证��右两端的元素对齐 */
   align-items: center;
   background-color: #007bff; /* 蓝色背景 */
   color: white;
