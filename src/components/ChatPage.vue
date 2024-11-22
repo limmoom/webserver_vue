@@ -45,18 +45,30 @@ export default {
             chatHistory: [],
             contactName: '',
             websocket: null, // WebSocket 对象
+            curUserId: null, // 添加当前用户ID
         };
     },
     created() {
+        this.curUserId = localStorage.getItem('UserID');
         this.initializeWebSocket();
         const userId = this.userId;
         console.log('userId chatpage:', userId);
         if (userId) {
             this.activeContactId = userId;
             this.loadChatHistory(userId);
-            localStorage.setItem(`lastContactId_${userId}`, userId);
+            localStorage.setItem(`lastContactId_${this.curUserId}_${userId}`, userId);
+            for (let i = 0; i < localStorage.length; i++) {
+                if (userId == localStorage.key(i)){
+                    continue;
+                }
+                const key = localStorage.key(i);
+                if (key.startsWith(`chatHistory_${this.curUserId}_`)) {
+                    const contactId = key.replace(`chatHistory_${this.curUserId}_`, '');
+                    this.loadChatHistory(contactId);
+                }
+            }
         } else {
-            const lastContactId = localStorage.getItem(`lastContactId_${userId}`);
+            const lastContactId = localStorage.getItem(`lastContactId_${this.curUserId}`);
             if (lastContactId) {
                 this.activeContactId = lastContactId;
             } else {
@@ -65,32 +77,28 @@ export default {
 
             for (let i = 0; i < localStorage.length; i++) {
                 const key = localStorage.key(i);
-                if (key.startsWith(`chatHistory_${userId}_`)) {
-                    const contactId = key.replace(`chatHistory_${userId}_`, '');
+                if (key.startsWith(`chatHistory_${this.curUserId}_`)) {
+                    const contactId = key.replace(`chatHistory_${this.curUserId}_`, '');
                     this.loadChatHistory(contactId);
                 }
             }
         }
     },
-    // beforeDestroy() {
-    //     if (this.websocket) {
-    //         this.websocket.close();
-    //     }
-    // },
     watch: {
         activeContactId: {
             immediate: true,
             handler(newContactId) {
                 if (newContactId) {
                     this.loadChatHistory(newContactId);
-                    localStorage.setItem(`lastContactId_${this.userId}`, newContactId);
+                    localStorage.setItem(`lastContactId_${this.curUserId}_${newContactId}`, newContactId);
                 }
             },
         },
     },
     methods: {
         initializeWebSocket() {
-            const url = `ws://43.143.213.221:8080/websocket/${this.userId}`;
+            const url = `ws://43.143.213.221:8080/websocket/${this.curUserId}`;
+            // const url = `ws://43.143.213.221:8080/websocket`;
             this.websocket = new WebSocket(url);
 
             this.websocket.onopen = this.handleOpen;
@@ -109,7 +117,7 @@ export default {
                 if (contactId === this.activeContactId) {
                     const message = {
                         id: Date.now(),
-                        sender: sender === this.userId ? 'me' : 'them',
+                        sender: sender === this.curUserId ? 'me' : 'them',
                         content: content,
                     };
                     this.chatHistory.push(message);
@@ -121,12 +129,12 @@ export default {
                     if (contact) {
                         const message = {
                             id: Date.now(),
-                            sender: sender === this.userId ? 'me' : 'them',
+                            sender: sender === this.curUserId ? 'me' : 'them',
                             content: content,
                         };
 
                         // 获取对应联系人的聊天记录
-                        let chatData = localStorage.getItem(`chatHistory_${this.userId}_${contactId}`);
+                        let chatData = localStorage.getItem(`chatHistory_${this.curUserId}_${contactId}`);
                         if (chatData) {
                             chatData = JSON.parse(chatData);
                             chatData.chatHistory.push(message);
@@ -145,7 +153,7 @@ export default {
                         }
 
                         // 保存回本地存储
-                        localStorage.setItem(`chatHistory_${this.userId}_${contactId}`, JSON.stringify(chatData));
+                        localStorage.setItem(`chatHistory_${this.curUserId}_${contactId}`, JSON.stringify(chatData));
                     } else {
                         console.warn(`未找到 contactId: ${contactId} 的联系人`);
                         // 可选：根据需要处理未找到联系人的情况
@@ -183,7 +191,7 @@ export default {
                 const payload = {
                     contactId: this.activeContactId,
                     content: this.newMessage,
-                    sender: this.userId,
+                    senderId: this.curUserId,
                 };
                 this.websocket.send(JSON.stringify(payload));
             } else {
@@ -196,7 +204,7 @@ export default {
         async loadChatHistory(contactId) {
             if (!contactId) return;
 
-            const history = localStorage.getItem(`chatHistory_${this.userId}_${contactId}`);
+            const history = localStorage.getItem(`chatHistory_${this.curUserId}_${contactId}`);
             if (history) {
                 const parsedHistory = JSON.parse(history);
                 this.chatHistory = Array.isArray(parsedHistory.chatHistory) ? parsedHistory.chatHistory : [];
@@ -236,14 +244,14 @@ export default {
                             this.contactName = contact.name;
                         }
                         chatData.contactName = this.contactName;
-                        localStorage.setItem(`chatHistory_${this.userId}_${contactId}`, JSON.stringify(chatData));
+                        localStorage.setItem(`chatHistory_${this.curUserId}_${contactId}`, JSON.stringify(chatData));
                     } else {
                         console.warn('获取用户信息失败：', response.data.errorMsg);
-                        localStorage.setItem(`chatHistory_${this.userId}_${contactId}`, JSON.stringify(chatData));
+                        localStorage.setItem(`chatHistory_${this.curUserId}_${contactId}`, JSON.stringify(chatData));
                     }
                 } catch (error) {
                     console.error('获取用户信息失败：', error);
-                    localStorage.setItem(`chatHistory_${this.userId}_${contactId}`, JSON.stringify(chatData));
+                    localStorage.setItem(`chatHistory_${this.curUserId}_${contactId}`, JSON.stringify(chatData));
                 }
             }
 
@@ -255,7 +263,7 @@ export default {
                 contactName: this.contactName,
                 chatHistory: this.chatHistory,
             };
-            localStorage.setItem(`chatHistory_${this.userId}_${this.activeContactId}`, JSON.stringify(chatData));
+            localStorage.setItem(`chatHistory_${this.curUserId}_${this.activeContactId}`, JSON.stringify(chatData));
         },
         updateContactName(contactId) {
             const contact = this.contacts.find(contact => contact.id == contactId);
@@ -273,6 +281,7 @@ export default {
         },
     },
 };
+
 </script>
 
 <style scoped>
