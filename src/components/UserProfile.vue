@@ -137,22 +137,26 @@ export default {
     };
   },
   created() {
-    // 从本地存储中获取用户信息
-    const UserId = localStorage.getItem('UserID');
-    const Username = localStorage.getItem('Username');
-    const Email = localStorage.getItem('Email');
-    const CompanyName = localStorage.getItem('companyName');
-    console.log('UserID:', UserId);
-
-    if (UserId) {
-      this.user.id = UserId;
-      this.user.username = Username;
-      this.user.email = Email;
-      this.user.company = CompanyName ? CompanyName : 'unknown';
-      this.fetchUserProducts(UserId); // 获取用户发布的旅游产品信息
+    this.userId = this.$route.query.userID;
+    this.user.id = this.userId;
+    console.log('UserProfile created with userId:', this.userId);
+    if (this.userId) {
+      this.fetchUserInfo(this.userId);
+      this.fetchUserProducts(this.userId); // 获取用户发布的旅游产品信息
     }
   },
   methods: {
+    async fetchUserInfo(UserId) {
+      const response = await axios.get(`/api/v1/User/${UserId}`);
+      console.log(response);
+      if (response.data.success) {
+        this.user.username = response.data.data.name;
+        this.user.email = response.data.data.email;
+        this.user.company = response.data.data.companyName;
+      } else {
+        alert('获取用户信息失败：' + response.data.errorMsg);
+      }
+    },
     async fetchUserProducts(userId) {
       this.loading = true;
       const queryParams = {

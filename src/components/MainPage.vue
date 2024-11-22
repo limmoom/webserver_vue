@@ -21,7 +21,7 @@
         </ul>
       </aside>
       <div class="content">
-        <component :is="currentComponent" v-bind="currentComponentProps"></component>
+        <component :is="currentComponent" v-bind="currentComponentProps" userId="userId"></component>
       </div>
     </div>
   </div>
@@ -44,6 +44,16 @@ export default {
     ProductDetail,
     ProductUpdate,
     ChatPage,
+  },
+  created() {
+    // 从路由查询参数中获取 userID
+    this.userId = this.$route.query.userID;
+    console.log('MainPage created with userId:', this.userId);
+    // 如果 userID 不存在，可以选择重定向回登录页面或显示错误信息
+    if (!this.userId) {
+      alert('用户ID缺失，请重新登录。');
+      this.$router.push('/login');
+    }
   },
   data() {
     return {
@@ -103,10 +113,12 @@ export default {
       this.$router.push({
       name: 'mainpage',
       query: {
-        component: componentName
+        component: componentName,
+        userID: this.userId,
       }
     });
     },
+    
   },
 };
 </script>

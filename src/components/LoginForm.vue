@@ -41,19 +41,10 @@ export default {
 
                 if (response.data.success) {
                     // 登录成功，获取返回的令牌或其他信息
-                    const UserID = response.data.data.user.id;   
-                    const Username = response.data.data.user.name;
-                    const Email = response.data.data.user.email;
-                    const companyName = response.data.data.user.companyName;
-
-                    // 将令牌保存到本地存储，以备后续请求使用
-                    localStorage.setItem('UserID', UserID);
-                    localStorage.setItem('Username', Username);
-                    localStorage.setItem('Email', Email);
-                    localStorage.setItem('companyName', companyName);
+                    const UserID = response.data.data.user.id;    
 
                     // 跳转到主页面
-                    router.push('/main');
+                    router.push({ path: '/main', query: { userID: UserID } });
                 } else {
                     // 登录失败，显示错误信息
                     alert('登录失败：' + response.data.message);

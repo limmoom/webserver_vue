@@ -57,7 +57,6 @@
 </template>
 
 <script>
-import { ref } from 'vue';
 import axios from 'axios';
 import DatePicker from 'vue3-datepicker'; // 确认使用的日期选择器包
 
@@ -66,42 +65,44 @@ export default {
     components: {
         DatePicker
     },
-    setup() {
-        const productName = ref('');
-        let departureTime = ref(new Date());
-        let cutoffTime = ref(new Date());
-        const productFeatures = ref('');
-        const productTheme = ref('');
-        const departureLocation = ref('');
-        const destination = ref('');
-        const maxCapacity = ref('0');
-        const productType = ref('跟团游');
-        const price = ref('0');
-        const UserID = localStorage.getItem('UserID');
 
-        // let startDate = departureTime.value.substring(0, 10)
-        // let endDate = cutoffTime.value.substring(0, 10)
-        // console.log("startDate: " + startDate)
-
-
-        const handlePublish = async () => {
+    data() {
+        return {
+            productName: '',
+            departureTime: new Date(),
+            cutoffTime: new Date(),
+            productFeatures: '',
+            productTheme: '',
+            departureLocation: '',
+            destination: '',
+            maxCapacity: '0',
+            productType: '跟团游',
+            price: '0',
+            userId: '' // 从路由参数中获取用户ID
+        };
+    },
+    created(){
+        this.userId = this.$route.query.userID;
+    },
+    methods: {
+        async handlePublish() {
             try {
                 // 构造请求数据
                 const productDTO = {
-                    userId: UserID,
-                    title: productName.value,
-                    startDate: departureTime.value.toISOString().substring(0, 10),
-                    endDate: cutoffTime.value.toISOString().substring(0, 10),
-                    features: productFeatures.value,
-                    theme: productTheme.value,
-                    departureLocation: departureLocation.value,
-                    destination: destination.value,
-                    maxCapacity: maxCapacity.value,
-                    productType: productType.value,
-                    price: price.value,
+                    userId: this.userId,
+                    title: this.productName,
+                    startDate: this.departureTime.toISOString().substring(0, 10),
+                    endDate: this.cutoffTime.toISOString().substring(0, 10),
+                    features: this.productFeatures,
+                    theme: this.productTheme,
+                    departureLocation: this.departureLocation,
+                    destination: this.destination,
+                    maxCapacity: this.maxCapacity,
+                    productType: this.productType,
+                    price: this.price
                 };
 
-                console.log(productDTO);
+                console.log("product publish object", productDTO);
 
                 // 发送 POST 请求到服务器的产品发布接口
                 const response = await axios.post('/api/v1/TravelProduct', productDTO);
@@ -110,16 +111,16 @@ export default {
                 if (response.data.success) {
                     alert('产品发布成功！');
                     // 清空表单
-                    productName.value = '';
-                    departureTime.value = '';
-                    cutoffTime.value = '';
-                    productFeatures.value = '';
-                    productTheme.value = '';
-                    departureLocation.value = '';
-                    destination.value = '';
-                    maxCapacity.value = '';
-                    productType.value = '';
-                    price.value = '';
+                    this.productName = '';
+                    this.departureTime = '';
+                    this.cutoffTime = '';
+                    this.productFeatures = '';
+                    this.productTheme = '';
+                    this.departureLocation = '';
+                    this.destination = '';
+                    this.maxCapacity = '';
+                    this.productType = '';
+                    this.price = '';
                 } else {
                     alert('产品发布失败：' + response.data.errorMsg);
                 }
@@ -127,41 +128,19 @@ export default {
                 console.error('产品发布请求出错：', error);
                 alert('产品发布时发生错误，请稍后重试。');
             }
-        };
-
-        const handleSave = () => {
-            // 处理保存逻辑
-            alert('保存功能尚未实现');
-        };
-
-        const handleDelete = () => {
-            productName.value = '';
-            departureTime.value = '';
-            cutoffTime.value = '';
-            productFeatures.value = '';
-            productTheme.value = '';
-            departureLocation.value = '';
-            destination.value = '';
-            maxCapacity.value = '';
-            productType.value = '';
-            price.value = '';
-        };
-
-        return {
-            productName,
-            departureTime,
-            cutoffTime,
-            productFeatures,
-            productTheme,
-            departureLocation,
-            destination,
-            maxCapacity,
-            productType,
-            price,
-            handlePublish,
-            handleSave,
-            handleDelete,
-        };
+        },
+        handleDelete() {
+            this.productName = '';
+            this.departureTime = '';
+            this.cutoffTime = '';
+            this.productFeatures = '';
+            this.productTheme = '';
+            this.departureLocation = '';
+            this.destination = '';
+            this.maxCapacity = '';
+            this.productType = '';
+            this.price = '';
+        }
     }
 };
 </script>
