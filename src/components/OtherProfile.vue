@@ -7,7 +7,12 @@
       <h2>个人主页</h2>
       <div class="header-buttons">
         <button @click="sendMessage" class="message-button">发消息</button>
-        <button @click="subscribe" class="subscribe-button">订阅</button>
+        <button 
+          @click="toggleSubscription" 
+          class="subscribe-button" 
+          :class="isSubscribed ? 'subscribed' : 'subscribe'">
+          {{ isSubscribed ? '已订阅' : '订阅' }}
+        </button>
       </div>
     </div>
     <div class="profile-info">
@@ -61,6 +66,9 @@ export default {
         email: '',
         company: '', // 默认值
       },
+      userIdFrom: localStorage.getItem('UserID'),
+      subscriptions: [], // 用户的关注列表
+      isSubscribed: false, // 是否已订阅
       products: [], // 用于存储用户发布的旅游产品信息
       isEditingUsername: false, // 控制修改用户名界面的显示
       newUsername: '', // 存储新的用户名
@@ -83,6 +91,7 @@ export default {
 
     if (UserId) {
       this.fetchUserProducts(UserId); // 获取用户发布的旅游产品信息
+      this.fetchUserSubscriptions(this.userIdFrom); // 获取本用户的关注列表
     }
   },
   methods: {
@@ -91,16 +100,82 @@ export default {
     },
     async fetchUserInfo(UserId) {
       const response = await axios.get(`/api/v1/User/${UserId}`);
-      console.log(response);
+      console.log('fetchUserInfoResponse:',response);
       if (response.data.success) {
         this.user.username = response.data.data.name;
         this.user.email = response.data.data.email;
         this.user.company = response.data.data.companyName;
+
       } else {
         alert('获取用户信息失败：' + response.data.errorMsg);
       }
     },
-    async fetchUserProducts(userId) {
+    async fetchUserSubscriptions(userId) {
+      try {
+        const response = await axios.get(`/api/v1/UserSubUser/${userId}/subscriptions`);
+        if (response.data.success) {
+          this.subscriptions = response.data.data; // 存储用户的关注列表
+          console.log('fetchUserSubscriptionsResponse:', this.subscriptions);
+          this.checkSubscriptionStatus(this.user.id);
+        } else {
+          alert('获取关注列表失败：' + response.data.errorMsg);
+        }
+      } catch (error) {
+        console.error('获取关注列表请求出错：', error);
+        alert('获取关注列表时发生错误，请稍后重试。');
+      }
+    },
+    
+    async toggleSubscription() {
+      const userIdTo = this.user.id;
+
+      if (this.isSubscribed) {
+        // 取消关注
+        try {
+          const response = await axios.delete(`/api/v1/UserSubUser/${this.userIdFrom}/${userIdTo}`);
+          if (response.data.success) {
+            this.isSubscribed = false;
+            alert('取消关注成功');
+          } else {
+            alert('取消关注失败：' + response.data.errorMsg);
+          }
+        } catch (error) {
+          console.error('取消关注请求出错：', error);
+          alert('取消关注时发生错误，请稍后重试。');
+        }
+      } else {
+        // 订阅
+        try {
+          const response = await axios.post(`/api/v1/UserSubUser/${this.userIdFrom}/${userIdTo}`);
+          if (response.data.success) {
+            this.isSubscribed = true;
+            alert('订阅成功');
+          } else {
+            alert('订阅失败：' + response.data.errorMsg);
+          }
+        } catch (error) {
+          console.error('订阅请求出错：', error);
+          alert('订阅时发生错误，请稍后重试。');
+        }
+      }
+    },
+
+    // 获取用户的关注状态
+    checkSubscriptionStatus(userIdTo) {
+      for (let i = 0; i < this.subscriptions.length; i++) {
+        console.log('num:', i);
+        if (this.subscriptions[i].userIdTo == userIdTo) {
+            this.isSubscribed = true; // 找到匹配的订阅，设置为 true
+            break; // 找到后可以直接退出循环
+        }
+      }
+      console.log('userIdTo:', userIdTo);
+      console.log('subscriptions:', this.subscriptions[0].userIdTo);
+      console.log('isSubscribed:', this.isSubscribed);
+    },
+
+
+    async fetchUserProducts(userId) { // 获取用户发布的旅游产品信息
       this.loading = true;
       const queryParams = {
         userId: userId,
@@ -504,7 +579,7 @@ export default {
 .message-button,
 .subscribe-button {
   background-color: #007bff;
-  color: white;
+  color: black;
   border: none;
   padding: 5px 10px;
   cursor: pointer;
@@ -516,5 +591,16 @@ export default {
 
 .subscribe-button:hover {
   background-color: #0056b3;
+}
+
+.subscribe {
+  background-color: #007bff;
+  color: black; /* 字体颜色保持为黑色 */
+}
+
+.subscribed {
+  background-color: gray;
+  color: black; /* 字体颜色保持为黑色 */
+  border: 1px solid gray;
 }
 </style>

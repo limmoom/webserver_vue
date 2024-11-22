@@ -33,6 +33,7 @@ import SearchBar from '@/components/SearchBar.vue';
 import ProductPublish from './ProductPublish.vue';
 import ProductDetail from './ProductDetail.vue';
 import ProductUpdate from './ProductUpdate.vue';
+import Subscribe from './Subscribe.vue';
 import ChatPage from './ChatPage.vue';
 
 export default {
@@ -43,7 +44,8 @@ export default {
     ProductPublish,
     ProductDetail,
     ProductUpdate,
-    ChatPage,
+    Subscribe,
+    ChatPage
   },
   created() {
     // 从路由查询参数中获取 userID
