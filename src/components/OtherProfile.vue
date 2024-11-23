@@ -7,7 +7,12 @@
       <h2>个人主页</h2>
       <div class="header-buttons">
         <button @click="sendMessage" class="message-button">发消息</button>
-        <button @click="subscribe" class="subscribe-button">订阅</button>
+        <button 
+          @click="toggleSubscription" 
+          class="subscribe-button" 
+          :class="isSubscribed ? 'subscribed' : 'subscribe'">
+          {{ isSubscribed ? '已订阅' : '订阅' }}
+        </button>
       </div>
     </div>
     <div class="profile-info">
@@ -50,6 +55,7 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'UserProfile',
@@ -61,6 +67,9 @@ export default {
         email: '',
         company: '', // 默认值
       },
+      userIdFrom: '',
+      subscriptions: [], // 用户的关注列表
+      isSubscribed: false, // 是否已订阅
       products: [], // 用于存储用户发布的旅游产品信息
       isEditingUsername: false, // 控制修改用户名界面的显示
       newUsername: '', // 存储新的用户名
@@ -75,14 +84,22 @@ export default {
       loading: false, // 加载状态
     };
   },
+  computed: {
+    ...mapGetters(['currentUser', 'getUserById']),
+  },
   created() {
     // 从本地存储中获取用户信息
     const UserId = this.$route.params.id;
     this.user.id = UserId;
+    this.userIdFrom = this.currentUser.id;
     this.fetchUserInfo(UserId);
+
+    console.log('UserIdFrom:', this.userIdFrom);
+    console.log('UserIdTo:', this.user.id);
 
     if (UserId) {
       this.fetchUserProducts(UserId); // 获取用户发布的旅游产品信息
+      this.fetchUserSubscriptions(this.userIdFrom); // 获取本用户的关注列表
     }
   },
   methods: {
@@ -100,6 +117,68 @@ export default {
         alert('获取用户信息失败：' + response.data.errorMsg);
       }
     },
+
+    async fetchUserSubscriptions(userIdFrom) {
+      try {
+        const response = await axios.get(`/api/v1/UserSubUser/${userIdFrom}/subscriptions`);
+        if (response.data.success) {
+          this.subscriptions = response.data.data; // 存储用户的关注列表
+          console.log('fetchUserSubscriptionsResponse:', response.data);
+          this.checkSubscriptionStatus(this.user.id);
+        } else {
+          alert('获取关注列表失败：' + response.data.errorMsg);
+        }
+      } catch (error) {
+        console.error('获取关注列表请求出错：', error);
+        alert('获取关注列表时发生错误，请稍后重试。');
+      }
+    },
+    
+    async toggleSubscription() {
+      const userIdTo = this.user.id;
+
+      if (this.isSubscribed) {
+        // 取消关注
+        try {
+          const response = await axios.delete(`/api/v1/UserSubUser/${this.userIdFrom}/${userIdTo}`);
+          if (response.data.success) {
+            this.isSubscribed = false;
+            alert('取消关注成功');
+          } else {
+            alert('取消关注失败：' + response.data.errorMsg);
+          }
+        } catch (error) {
+          console.error('取消关注请求出错：', error);
+          alert('取消关注时发生错误，请稍后重试。');
+        }
+      } else {
+        // 订阅
+        try {
+          const response = await axios.post(`/api/v1/UserSubUser/${this.userIdFrom}/${userIdTo}`);
+          if (response.data.success) {
+            this.isSubscribed = true;
+            alert('订阅成功');
+          } else {
+            alert('订阅失败：' + response.data.errorMsg);
+          }
+        } catch (error) {
+          console.error('订阅请求出错：', error);
+          alert('订阅时发生错误，请稍后重试。');
+        }
+      }
+    },
+
+    // 获取用户的关注状态
+    checkSubscriptionStatus(userIdTo) {
+      for (let i = 0; i < this.subscriptions.length; i++) {
+        if (this.subscriptions[i].userIdTo == userIdTo) {
+            this.isSubscribed = true; // 找到匹配的订阅，设置为 true
+            break; // 找到后可以直接退出循环
+        }
+      }
+      console.log('isSubscribed:', this.isSubscribed);
+    },
+
     async fetchUserProducts(userId) {
       this.loading = true;
       const queryParams = {
@@ -276,10 +355,6 @@ export default {
           userId: userId
         }
       });
-    },
-    subscribe() {
-      // 这里可以添加订阅的逻辑
-      alert('订阅功能尚未实现');
     }
   },
 };
@@ -516,5 +591,16 @@ export default {
 
 .subscribe-button:hover {
   background-color: #0056b3;
+}
+
+.subscribe {
+  background-color: #007bff;
+  color: black; /* 字体颜色保持为黑色 */
+}
+
+.subscribed {
+  background-color: gray;
+  color: black; /* 字体颜色保持为黑色 */
+  border: 1px solid gray;
 }
 </style>

@@ -114,11 +114,7 @@ export default {
     },
     methods: {
         initializeWebSocket() {
-            if (this.curUserId == 29) {
-                this.wsid = 111;
-            } else {
-                this.wsid = 222;
-            }
+            
             const url = `ws://43.143.213.221:8080/websocket/${this.curUserId}`;
             // const url = `ws://43.143.213.221:8080/websocket/${this.wsid}`;
             this.websocket = new WebSocket(url);
@@ -137,9 +133,10 @@ export default {
                 const data = JSON.parse(event.data);
                 // const { contactId, sender, content } = data;
                 const { receiverId, senderId, content } = data;
-                const contactId = senderId;
-                const sender = receiverId;
-                if (contactId === this.activeContactId) {
+                const contactId = String(senderId);
+                const sender = senderId;
+                console.log('receiverId:', receiverId);
+                if (contactId === String(this.activeContactId)) {
                     const message = {
                         id: Date.now(),
                         sender: sender === this.curUserId ? 'me' : 'them',
@@ -320,6 +317,7 @@ export default {
                     console.error('获取用户信息失败：', error);
                     localStorage.setItem(`chatHistory_${this.curUserId}_${contactId}`, JSON.stringify(chatData));
                 }
+                this.chatHistory = [];
             }
 
             this.updateContactName(contactId);
