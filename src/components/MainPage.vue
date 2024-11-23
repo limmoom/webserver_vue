@@ -21,7 +21,7 @@
         </ul>
       </aside>
       <div class="content">
-        <component :is="currentComponent" v-bind="currentComponentProps" userId="userId"></component>
+        <component :is="currentComponent" @edit-product="handleEditProduct"  @go-back="handleGoBack" ></component>
       </div>
     </div>
   </div>
