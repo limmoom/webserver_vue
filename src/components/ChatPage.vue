@@ -46,6 +46,7 @@ export default {
             contactName: '',
             websocket: null, // WebSocket 对象
             curUserId: null, // 添加当前用户ID
+            wsid: null,
         };
     },
     created() {
@@ -58,7 +59,7 @@ export default {
             this.loadChatHistory(userId);
             localStorage.setItem(`lastContactId_${this.curUserId}_${userId}`, userId);
             for (let i = 0; i < localStorage.length; i++) {
-                if (userId == localStorage.key(i)){
+                if (userId == localStorage.key(i)) {
                     continue;
                 }
                 const key = localStorage.key(i);
@@ -97,8 +98,13 @@ export default {
     },
     methods: {
         initializeWebSocket() {
-            const url = `ws://43.143.213.221:8080/websocket/${this.curUserId}`;
-            // const url = `ws://43.143.213.221:8080/websocket`;
+            if (this.curUserId == 29) {
+                this.wsid = 111;
+            } else {
+                this.wsid = 222;
+            }
+            // const url = `ws://43.143.213.221:8080/websocket/${this.curUserId}`;
+            const url = `ws://43.143.213.221:8080/websocket/${this.wsid}`;
             this.websocket = new WebSocket(url);
 
             this.websocket.onopen = this.handleOpen;
@@ -157,10 +163,37 @@ export default {
                     } else {
                         console.warn(`未找到 contactId: ${contactId} 的联系人`);
                         // 可选：根据需要处理未找到联系人的情况
+                        this.fetchAndStoreContact(contactId, content, sender);
                     }
                 }
             } catch (error) {
                 console.error('解析消息失败:', error);
+            }
+        },
+        async fetchAndStoreContact(contactId, content, sender) {
+            try {
+                const response = await axios.get(`/api/v1/User/${contactId}`);
+                if (response.data.success) {
+                    const contactName = response.data.data.name || '未知联系人';
+                    const message = {
+                        id: Date.now(),
+                        sender: sender === this.curUserId ? 'me' : 'them',
+                        content: content,
+                    };
+                    const chatData = {
+                        contactName: contactName,
+                        chatHistory: [message],
+                    };
+                    this.contacts.push({
+                        id: contactId,
+                        name: contactName,
+                    });
+                    localStorage.setItem(`chatHistory_${this.curUserId}_${contactId}`, JSON.stringify(chatData));
+                } else {
+                    console.warn('获取用户信息失败：', response.data.errorMsg);
+                }
+            } catch (error) {
+                console.error('获取用户信息失败：', error);
             }
         },
         handleClose(event) {
@@ -188,11 +221,25 @@ export default {
 
             // 通过 WebSocket 发送消息
             if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-                const payload = {
-                    contactId: this.activeContactId,
-                    content: this.newMessage,
-                    senderId: this.curUserId,
-                };
+                if (this.wsid == 111) {
+                    var payload = {
+                        receiverId: 222,
+                        content: this.newMessage,
+                        senderId: 111,
+                    }
+                } else {
+                    payload = {
+                        receiverId: 111,
+                        content: this.newMessage,
+                        senderId: 222,
+                    }
+                }
+                console.log('payload:', payload);
+                // const payload = {
+                //     receiverId: this.activeContactId,
+                //     content: this.newMessage,
+                //     senderId: this.curUserId,
+                // };
                 this.websocket.send(JSON.stringify(payload));
             } else {
                 console.warn('WebSocket未连接，无法发送消息');

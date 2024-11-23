@@ -60,6 +60,7 @@
                     "receiverId" : toId,
                     "content" : data
                 }
+                console.log("发送数据到服务器..." + JSON.stringify(userMessage));
                 ws.send(JSON.stringify(userMessage));
             } catch (ex) {
                 alert(ex.message);
