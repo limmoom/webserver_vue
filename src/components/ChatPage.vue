@@ -29,6 +29,7 @@
 
 <script>
 import axios from 'axios';
+import { mapGetters } from 'vuex';
 
 export default {
     props: {
@@ -49,8 +50,12 @@ export default {
             wsid: null,
         };
     },
+    computed: {
+    ...mapGetters(['currentUser', 'getUserById']),
+    },
     created() {
-        this.curUserId = localStorage.getItem('UserID');
+        // this.curUserId = localStorage.getItem('UserID');
+        this.curUserId = this.currentUser.id;
         this.initializeWebSocket();
         const userId = this.userId;
         console.log('userId chatpage:', userId);

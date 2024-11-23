@@ -7,6 +7,6 @@ import 'font-awesome/css/font-awesome.min.css';
 
 const app = createApp(App);
 app.use(store);
-store.dispatch('initStore');
+store.dispatch('initializeStore');
 
 app.use(router).mount('#app');

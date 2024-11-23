@@ -19,6 +19,7 @@
 import router from '@/router';
 import { ref } from 'vue';
 import axios from 'axios';
+import { useStore } from 'vuex';
 axios.defaults.baseURL = '';
 
 export default {
@@ -26,6 +27,7 @@ export default {
     setup() {
         const username = ref('');
         const password = ref('');
+        const store = useStore();
 
         const handleLogin = async () => {
             try {
@@ -41,16 +43,27 @@ export default {
 
                 if (response.data.success) {
                     // 登录成功，获取返回的令牌或其他信息
-                    const UserID = response.data.data.user.id;   
+                    const UserID = response.data.data.user.id;
                     const Username = response.data.data.user.name;
                     const Email = response.data.data.user.email;
                     const companyName = response.data.data.user.companyName;
+
+                    const userData = {
+                        id: response.data.data.user.id,
+                        name: response.data.data.user.name,
+                        email: response.data.data.user.email,
+                        companyName: response.data.data.user.companyName,
+                    };
+
 
                     // 将令牌保存到本地存储，以备后续请求使用
                     localStorage.setItem('UserID', UserID);
                     localStorage.setItem('Username', Username);
                     localStorage.setItem('Email', Email);
                     localStorage.setItem('companyName', companyName);
+
+                    store.dispatch('addUser', userData);
+                    store.dispatch('setCurrentUser', userData);
 
                     // 跳转到主页面
                     router.push('/main');

@@ -57,9 +57,10 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import axios from 'axios';
 import DatePicker from 'vue3-datepicker'; // 确认使用的日期选择器包
+import { useStore } from 'vuex';
 
 export default {
     name: 'ProductPublish',
@@ -77,7 +78,16 @@ export default {
         const maxCapacity = ref('0');
         const productType = ref('跟团游');
         const price = ref('0');
-        const UserID = localStorage.getItem('UserID');
+        // const UserID = localStorage.getItem('UserID');
+        const store = useStore();
+        const currentUser = computed(() => store.getters.currentUser);
+        if (!currentUser.value) {
+            console.log('当前没有登录用户。');
+            // 您可以在这里进行重定向或其他处理
+        }
+        // 通过 currentUser 获取 UserID
+        const UserID = currentUser.value ? currentUser.value.id : null;
+
 
         // let startDate = departureTime.value.substring(0, 10)
         // let endDate = cutoffTime.value.substring(0, 10)
