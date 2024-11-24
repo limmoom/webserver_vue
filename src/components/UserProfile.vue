@@ -106,6 +106,38 @@
         </div>
       </div>
     </div>
+
+    <div>
+      <h2>我的动态</h2>
+      <ul v-if="dynamics.length > 0">
+        <li v-for="dynamic in sortedDynamics" :key="dynamic.id">
+          <h3>{{ dynamic.title }}</h3>
+          <p>{{ dynamic.content }}</p>
+          <p><strong>发布时间：</strong>{{ new Date(dynamic.issuedAt).toLocaleString() }}</p>
+          <p><strong>Tag: </strong>
+            <span>
+              {{ dynamic.tags && dynamic.tags.length > 0
+                ? dynamic.tags.map(tag => `#${tag.name}`).join(', ')
+                : '无' }}
+            </span>
+          </p>
+          <p v-if="dynamic.urlId">
+            <strong>相关产品: </strong>
+            <a
+              href="javascript:void(0)"
+              @click="navigateToProductDetail(dynamic.urlId)"
+            >
+              {{ dynamic.linkedProductName || '加载中...' }}
+            </a>
+          </p>
+          <!-- 修改和删除按钮 -->
+          <button @click="editDynamic(dynamic.id)">修改</button>
+          <button @click="deleteDynamic(dynamic.id)">删除</button>
+          <hr />
+        </li>
+      </ul>
+      <p v-else>暂无动态</p>
+    </div>
   </div>
 </template>
 
@@ -128,13 +160,14 @@ export default {
       newUsername: '', // 存储新的用户名
       isEditingEmail: false, // 控制修改邮箱界面的显示
       newEmail: '', // 存储新的邮箱
-      isEditingCompany: false, // 控制修改公司界面的显示
+      isEditingCompany: false, // 控制修改公司的显示
       newCompany: '', // 存储新的公司名称
       currentPage: 0, // 当前页
       pageSize: 5, // 每页显示的数量
       totalItems: 0, // 总结果数
       totalPages: 0, // 总页数
       loading: false, // 加载状态
+      dynamics: [], // 当前用户的动态
     };
   },
   computed: {
@@ -142,6 +175,10 @@ export default {
     // user() {
     //   return this.currentUser;
     // },
+    // 按发布时间从新到旧排序动态
+    sortedDynamics() {
+      return [...this.dynamics].sort((a, b) => new Date(b.issuedAt) - new Date(a.issuedAt));
+    },
   },
   created() {
     if (this.currentUser && this.currentUser.id) {
@@ -158,6 +195,8 @@ export default {
     //   this.fetchUserInfo(this.userId);
     //   this.fetchUserProducts(this.userId); // 获取用户发布的旅游产品信息
     // }
+    // 获取当前用户的动态
+    this.fetchUserDynamics();
   },
   methods: {
     async fetchUserInfo(UserId) {
@@ -193,6 +232,79 @@ export default {
         alert('获取旅游产品信息时发生错误，请稍后重试。');
       } finally {
         this.loading = false;
+      }
+    },
+    async fetchUserDynamics() {
+      try {
+        const response = await axios.get(`/api/v1/User/${this.user.id}/Dynamics`);
+        if (response.data.success) {
+          this.dynamics = response.data.data.data.map((dynamic) => ({
+            ...dynamic,
+            linkedProductName: null, // 初始化链接产品名称
+          }));
+          // 获取相关产品名称
+          this.fetchAllProductNames();
+        } else {
+          console.error("获取动态失败：", response.data.errorMsg);
+        }
+      } catch (error) {
+        console.error("获取动态出错：", error);
+      }
+    },
+    // 获取所有相关产品的名称
+    async fetchAllProductNames() {
+      try {
+        const productIds = this.dynamics
+          .filter((dynamic) => dynamic.urlId)
+          .map((dynamic) => dynamic.urlId);
+
+        // 并行请求所有产品名称
+        const requests = productIds.map((id) =>
+          axios.get(`/api/v1/TravelProduct/${id}`)
+        );
+        const responses = await Promise.all(requests);
+
+        // 更新动态的 linkedProductName
+        responses.forEach((response, index) => {
+          if (response.data.success) {
+            const productId = productIds[index];
+            const productName = response.data.data.title;
+            this.dynamics = this.dynamics.map((dynamic) =>
+              dynamic.urlId === productId
+                ? { ...dynamic, linkedProductName: productName }
+                : dynamic
+            );
+          }
+        });
+      } catch (error) {
+        console.error("获取产品名称出错：", error);
+      }
+    },
+    // 跳转到产品详情页
+    navigateToProductDetail(productId) {
+      this.$router.push(`/product-detail/${productId}`);
+    },
+    // 编辑动态
+    editDynamic(dynamicId) {
+      // 跳转到动态编辑页面，传递动态ID
+      this.$router.push({ name: 'DynamicEdit', params: { dynamicId: dynamicId } });
+    },
+    // 删除动态
+    async deleteDynamic(dynamicId) {
+      if (confirm('确定要删除这条动态吗？')) {
+        try {
+          const response = await axios.delete(`/api/v1/Dynamic/${dynamicId}`);
+          if (response.data.success) {
+            alert('动态删除成功！');
+            // 重新获取动态列表
+            this.fetchUserDynamics();
+          } else {
+            alert('删除动态失败：' + response.data.errorMsg);
+          }
+        } catch (error) {
+          console.error('删除动态请求出错：', error);
+          alert('删除动态时发生错误，请稍后重试。');
+        }
       }
     },
     editProduct(productId) {
@@ -508,12 +620,34 @@ export default {
 }
 
 .button-spacer {
-  width: 10px; /* 根据需要调整空格宽度 */
+  width: 10px; /* 根据���要调整空格宽度 */
 }
 
 .button-container {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 可根据需要添加或修改样式 */
+h2 {
+  margin-bottom: 20px;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 20px;
+}
+
+button {
+  margin-right: 10px;
+}
+
+hr {
+  border: 1px solid #ccc;
 }
 </style>

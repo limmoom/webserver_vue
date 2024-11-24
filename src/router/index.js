@@ -16,6 +16,12 @@ const routes = [
     path: '/mainpage',
     name: 'mainpage',
     component: MainPage,
+  },
+  {
+    path: '/dynamicedit/:dynamicId',
+    name: 'DynamicEdit',
+    component: () => import('@/components/DynamicEdit.vue'),
+    props: true,
   }
 ];
 
