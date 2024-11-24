@@ -18,6 +18,7 @@
           <li><a href="#" @click.prevent="navigateToComponent('UserProfile')">个人主页</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('ChatPage')">聊天信息</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('ProductPublish')">新信息发布</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('DynamicPublish')">新动态发布</a></li>
         </ul>
       </aside>
       <div class="content">
@@ -35,6 +36,7 @@ import ProductDetail from './ProductDetail.vue';
 import ProductUpdate from './ProductUpdate.vue';
 import Subscribe from './Subscribe.vue';
 import ChatPage from './ChatPage.vue';
+import DynamicPublish from './DynamicPublish.vue';
 
 export default {
   name: 'MainPage',
@@ -46,6 +48,7 @@ export default {
     ProductUpdate,
     Subscribe,
     ChatPage,
+    DynamicPublish,
   },
   data() {
     return {
