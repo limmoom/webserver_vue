@@ -17,12 +17,20 @@ const routes = [
     name: 'mainpage',
     component: MainPage,
   },
-  {
-    path: '/dynamicedit/:dynamicId',
-    name: 'DynamicEdit',
-    component: () => import('@/components/DynamicEdit.vue'),
-    props: true,
-  }
+  // {
+  //   path: '/mainpage',
+  //   name: 'MainPage',
+  //   component: MainPage,
+  //   children: [
+  //     {
+  //       path: 'dynamicedit/:dynamicId',
+  //       name: 'DynamicEdit',
+  //       component: () => import('@/components/DynamicEdit.vue'),
+  //       props: true,
+  //     },
+  //     // 可以在这里添加更多子路由
+  //   ],
+  // },
 ];
 
 const router = createRouter({

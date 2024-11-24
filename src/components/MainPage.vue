@@ -39,6 +39,7 @@ import Subscribe from './Subscribe.vue';
 import ChatPage from './ChatPage.vue';
 import DynamicPublish from './DynamicPublish.vue';
 import TagSearchBar from './TagSearchBar.vue';
+import DynamicEdit from './DynamicEdit.vue';
 
 export default {
   name: 'MainPage',
@@ -52,6 +53,7 @@ export default {
     ChatPage,
     DynamicPublish,
     TagSearchBar,
+    DynamicEdit,
   },
   data() {
     return {
@@ -59,6 +61,7 @@ export default {
       userId: null,
       isSidebarCollapsed: false,
       productId: '',
+      dynamicId: null,
     };
   },
   watch: {
@@ -80,15 +83,28 @@ export default {
         console.log('检测到路由参数 userId 变化：', newUserId);
         this.userId = newUserId;
       }
-    }
+    },
+    '$route.query.dynamicId': {
+      immediate: true,
+      handler(newdynamicId) {
+        
+        this.dynamicId = newdynamicId;
+        console.log('监听', this.dynamicId);
+      }
+    },
   },
   computed: {
     currentComponentProps() {
+      console.log('当前组件：', this.currentComponent);
       if (this.currentComponent === 'ChatPage') {
         return { userId: this.userId };
-      } else {
-        return {};
-      }
+      } else  {
+        console.log('检测到动态id变化：', this.dynamicId);
+        return { dynamicId: this.dynamicId };
+      } 
+      // else {
+      //   return {};
+      // }
     },
   },
   methods: {

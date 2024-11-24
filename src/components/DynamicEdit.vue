@@ -26,35 +26,57 @@
 
 <script>
 import axios from 'axios';
-import { ref, computed } from 'vue';
-import { useStore } from 'vuex';
+import { mapGetters } from 'vuex';
 
 export default {
     name: 'DynamicEdit',
-    props: {
-        dynamicId: {
-            type: String,
-            required: true,
+    // props: {
+    //     dynamicId: {
+    //         type: [String, Number],
+    //         required: true,
+    //     },
+    // },
+    data() {
+        return {
+            title: '',
+            content: '',
+            tagsInput: '',
+            userId: null,
+            dynamicId: null,
+        };
+    },
+    watch: {
+        '$route.query.dynamicId': {
+            immediate: true,
+            handler(newdynamicId) {
+                // console.log('chatpage监听到路由参数 userId 变化：', newUserId);
+                this.dynamicId = newdynamicId;
+                // this.loadChatHistory(newUserId);
+                // this.userId = newUserId;
+            }
         },
     },
-    setup(props, { emit }) {
-        const title = ref('');
-        const content = ref('');
-        const tagsInput = ref('');
-        const store = useStore();
-        const currentUser = computed(() => store.getters.currentUser);
-        const userId = currentUser.value ? currentUser.value.id : null;
-
+    computed: {
+        ...mapGetters(['currentUser']),
+    },
+    created() {
+        console.log('DynamicEdit created.'+this.dynamicId);
+        if (this.currentUser) {
+            this.userId = this.currentUser.id;
+        }
+        this.fetchDynamicDetails();
+    },
+    methods: {
         // 获取动态详情
-        const fetchDynamicDetails = async () => {
+        async fetchDynamicDetails() {
             try {
-                const response = await axios.get(`/api/v1/Dynamic/${props.dynamicId}`);
+                const response = await axios.get(`/api/v1/Dynamic/${this.dynamicId}`);
                 if (response.data.success) {
                     const dynamic = response.data.data;
-                    title.value = dynamic.title;
-                    content.value = dynamic.content;
+                    this.title = dynamic.title;
+                    this.content = dynamic.content;
                     // 将标签数组转换为字符串
-                    tagsInput.value = dynamic.tags && dynamic.tags.length > 0
+                    this.tagsInput = dynamic.tags && dynamic.tags.length > 0
                         ? dynamic.tags.map(tag => `#${tag.name}`).join('')
                         : '';
                 } else {
@@ -64,29 +86,28 @@ export default {
                 console.error('获取动态信息出错：', error);
                 alert('获取动态信息时发生错误，请稍后重试。');
             }
-        };
-
+        },
         // 提交修改
-        const handleUpdate = async () => {
+        async handleUpdate() {
             try {
                 const dynamicDTO = {
-                    title: title.value,
-                    content: content.value,
-                    userId: userId,
+                    title: this.title,
+                    content: this.content,
+                    userId: this.userId,
                 };
 
                 // 处理标签，将 tagsInput 按 '#' 分割
-                const tagsArray = tagsInput.value.split('#').filter(tag => tag.trim() !== '');
+                const tagsArray = this.tagsInput.split('#').filter(tag => tag.trim() !== '');
                 // 构建查询参数
                 const queryParams = tagsArray.map(tag => `tags=${encodeURIComponent(tag.trim())}`).join('&');
                 // 拼接请求 URL
-                const url = `/api/v1/Dynamic/${props.dynamicId}?${queryParams}`;
+                const url = `/api/v1/Dynamic/${this.dynamicId}?${queryParams}`;
 
                 const response = await axios.put(url, dynamicDTO);
 
                 if (response.data.success) {
                     alert('动态修改成功！');
-                    emit('go-back');
+                    this.$emit('go-back');
                 } else {
                     alert('动态修改失败：' + response.data.errorMsg);
                 }
@@ -94,17 +115,7 @@ export default {
                 console.error('动态修改请求出错：', error);
                 alert('修改动态时发生错误，请稍后重试。');
             }
-        };
-
-        // 初始化时获取动态详情
-        fetchDynamicDetails();
-
-        return {
-            title,
-            content,
-            tagsInput,
-            handleUpdate,
-        };
+        },
     },
 };
 </script>

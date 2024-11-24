@@ -131,8 +131,8 @@
             </a>
           </p>
           <!-- 修改和删除按钮 -->
-          <button @click="editDynamic(dynamic.id)">修改</button>
-          <button @click="deleteDynamic(dynamic.id)">删除</button>
+          <button @click="editDynamic(dynamic.id)" class="btn btn-edit">修改</button>
+          <button @click="deleteDynamic(dynamic.id)" class="btn btn-delete">删除</button>
           <hr />
         </li>
       </ul>
@@ -287,7 +287,14 @@ export default {
     // 编辑动态
     editDynamic(dynamicId) {
       // 跳转到动态编辑页面，传递动态ID
-      this.$router.push({ name: 'DynamicEdit', params: { dynamicId: dynamicId } });
+      // this.$router.push({ name: 'DynamicEdit', params: { dynamicId: dynamicId } });
+      this.$router.push({
+        name: 'mainpage',
+        query: {
+          component: 'DynamicEdit',
+          dynamicId: dynamicId
+        }
+      });
     },
     // 删除动态
     async deleteDynamic(dynamicId) {
@@ -649,5 +656,32 @@ button {
 
 hr {
   border: 1px solid #ccc;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+}
+
+.btn-edit {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.btn-edit:hover {
+  background-color: #0056b3;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: #fff;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
 }
 </style>
