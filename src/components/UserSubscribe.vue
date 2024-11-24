@@ -8,7 +8,7 @@
         <p><strong>Tag: </strong>
           <span>
             {{ dynamic.tags && dynamic.tags.length > 0
-              ? dynamic.tags.map(tag => tag.name).join(', ')
+              ? dynamic.tags.map(tag => `#${tag.name}`).join(', ')
               : '无' }}
           </span>
         </p>

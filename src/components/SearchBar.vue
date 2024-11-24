@@ -291,8 +291,7 @@
     watch: {
       // 监听 searchQuery 和 selectedFilters 的变化，自动触发搜索
       searchQuery() {
-        this.currentPage = 0; // 每次搜索时，重置为第一页
-        this.fetchProducts(); // 触发数据请求
+        
       },
 
       selectedFilters: {

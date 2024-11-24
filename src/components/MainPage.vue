@@ -14,6 +14,7 @@
       <aside v-if="!isSidebarCollapsed" class="sidebar">
         <ul>
           <li><a href="#" @click.prevent="navigateToComponent('SearchBar')">产品搜索</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('TagSearchBar')">标签搜索</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('Subscribe')">我的订阅</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('UserProfile')">个人主页</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('ChatPage')">聊天信息</a></li>
@@ -37,6 +38,7 @@ import ProductUpdate from './ProductUpdate.vue';
 import Subscribe from './Subscribe.vue';
 import ChatPage from './ChatPage.vue';
 import DynamicPublish from './DynamicPublish.vue';
+import TagSearchBar from './TagSearchBar.vue';
 
 export default {
   name: 'MainPage',
@@ -49,6 +51,7 @@ export default {
     Subscribe,
     ChatPage,
     DynamicPublish,
+    TagSearchBar,
   },
   data() {
     return {
