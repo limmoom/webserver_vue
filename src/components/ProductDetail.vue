@@ -83,7 +83,7 @@
 
                     <!-- 二级评论 -->
                     <div v-if="comment.replies && comment.replies.length > 0">
-                        <div v-for="reply in comment.replies" :key="reply.id" class="comment-item reply-item">
+                        <div v-for="reply in comment.replies" :key="reply.id" class="comment-item reply">
                             <p class="comment-author">
                                 <router-link :to="{ name: 'OtherProfile', params: { id: reply.userId } }">
                                     {{ reply.userName }}

@@ -1,9 +1,16 @@
 <template>
   <div>
     <ul v-if="dynamics.length > 0">
-      <li v-for="dynamic in sortedDynamics" :key="dynamic.id">
-        <h3>{{ dynamic.title }}</h3>
+      <li v-for="dynamic in sortedDynamics" :key="dynamic.id" class="dynamic-card">
+        <!-- 动态标题，添加鼠标悬浮样式和点击跳转 -->
+        <h3
+          class="dynamic-title"
+          @click="goToDynamicDetail(dynamic.id)"
+        >
+          {{ dynamic.title }}
+        </h3>
         <p>{{ dynamic.content }}</p>
+        <p><strong>发布者：</strong>{{ dynamic.publisherName || '加载中...' }}</p>
         <p><strong>发布时间：</strong>{{ new Date(dynamic.issuedAt).toLocaleString() }}</p>
         <p><strong>Tag: </strong>
           <span>
@@ -21,7 +28,6 @@
             {{ dynamic.linkedProductName || '加载中...' }}
           </a>
         </p>
-        <hr />
       </li>
     </ul>
     <p v-else>暂无关注用户的动态</p>
@@ -49,19 +55,19 @@ export default {
     },
   },
   created() {
-    // 从本地存储中获取当前用户信息
     this.userIdFrom = this.currentUser.id;
 
-    // 获取用户的关注列表和动态内容
     this.fetchSubscriptions()
       .then(() => this.fetchDynamicsForSubscriptions())
-      .then(() => this.fetchAllProductNames()) // 在获取动态内容后立即调用，提前加载产品名称
+      .then(() => {
+        this.fetchAllProductNames();
+        this.fetchPublisherNames();
+      })
       .catch((error) => {
         console.error("Error fetching subscriptions or dynamics:", error);
       });
   },
   methods: {
-    // 获取当前用户的关注列表
     async fetchSubscriptions() {
       try {
         const response = await axios.get(`/api/v1/UserSubUser/${this.userIdFrom}/subscriptions`);
@@ -74,7 +80,6 @@ export default {
         console.error("Error fetching subscriptions:", error);
       }
     },
-    // 根据关注列表获取动态
     async fetchDynamicsForSubscriptions() {
       try {
         const allDynamics = [];
@@ -82,10 +87,10 @@ export default {
           const userIdTo = subscription.userIdTo;
           const response = await axios.get(`/api/v1/User/${userIdTo}/Dynamics`);
           if (response.data.success) {
-            // 初始化动态的相关产品名称字段
             const dynamics = response.data.data.data.map((dynamic) => ({
               ...dynamic,
-              linkedProductName: null, // 初始化链接产品名称
+              linkedProductName: null,
+              publisherName: null,
             }));
             allDynamics.push(...dynamics);
           } else {
@@ -97,20 +102,17 @@ export default {
         console.error("Error fetching dynamics:", error);
       }
     },
-    // 获取所有相关产品的名称
     async fetchAllProductNames() {
       try {
         const productIds = this.dynamics
           .filter((dynamic) => dynamic.urlId)
           .map((dynamic) => dynamic.urlId);
 
-        // 并行请求所有产品名称
         const requests = productIds.map((id) =>
           axios.get(`/api/v1/TravelProduct/${id}`)
         );
         const responses = await Promise.all(requests);
 
-        // 更新动态的 linkedProductName
         responses.forEach((response, index) => {
           if (response.data.success) {
             const productId = productIds[index];
@@ -126,29 +128,70 @@ export default {
         console.error("Error fetching product names:", error);
       }
     },
-    // 跳转到产品详情页
+    async fetchPublisherNames() {
+      try {
+        const userIds = [...new Set(this.dynamics.map((dynamic) => dynamic.userId))];
+
+        const requests = userIds.map((id) => axios.get(`/api/v1/User/${id}`));
+        const responses = await Promise.all(requests);
+
+        responses.forEach((response, index) => {
+          if (response.data.success) {
+            const userId = userIds[index];
+            const userName = response.data.data.name;
+            this.dynamics = this.dynamics.map((dynamic) =>
+              dynamic.userId === userId
+                ? { ...dynamic, publisherName: userName }
+                : dynamic
+            );
+          }
+        });
+      } catch (error) {
+        console.error("Error fetching publisher names:", error);
+      }
+    },
     navigateToProductDetail(productId) {
       this.$router.push(`/product-detail/${productId}`);
+    },
+    goToDynamicDetail(dynamicId) {
+      // 使用 Vue Router 跳转到动态详情页，传递动态 ID
+      this.$router.push(`/dynamic-detail/${dynamicId}`);
     },
   },
 };
 </script>
 
 <style scoped>
-h2 {
-  margin-bottom: 20px;
-}
-
+/* 样式调整 */
 ul {
   list-style: none;
   padding: 0;
 }
 
 li {
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  width: 760px;
+  margin-bottom: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-hr {
-  border: 1px solid #ccc;
+.dynamic-card h3 {
+  margin-bottom: 10px;
+  cursor: pointer;
+  color: #333;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.dynamic-card h3:hover {
+  color: #007bff;
+  text-decoration: underline;
+}
+
+.dynamic-card p {
+  margin: 5px 0;
 }
 </style>

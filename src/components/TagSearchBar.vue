@@ -1,4 +1,4 @@
-<template>
+<template> 
     <div style="margin-bottom: 30px;"></div>
     <div class="search-bar">
       <!-- 搜索栏部分 -->
@@ -23,9 +23,14 @@
             v-for="(tag, index) in tags"
             :key="index"
             class="tag-summary-block"
-            @click="goToTagDetail(tag.id)"
           >
             <p>{{ tag.name }}</p>
+            <button
+              :class="['subscribe-button', isSubscribed(tag.id) ? 'subscribed' : '']"
+              @click="toggleSubscription(tag.id)"
+            >
+              {{ isSubscribed(tag.id) ? '✔' : '✚' }}
+            </button>
           </div>
         </div>
   
@@ -42,6 +47,7 @@
   </template>
   
   <script>
+  import { mapGetters } from 'vuex';
   export default {
     name: "TagSearch",
     data() {
@@ -53,7 +59,15 @@
         pageSize: 10, // 每页显示的数量
         totalItems: 0, // 总结果数
         totalPages: 0, // 总页数
+        userId: 0, // 当前用户ID
+        userSubscriptions: [], // 用户已订阅的tagID列表
       };
+    },
+    computed: {
+      ...mapGetters(['currentUser', 'getUserById']),
+    },
+    created() {
+      this.userId = this.currentUser.id;
     },
     methods: {
       // 搜索方法
@@ -95,18 +109,73 @@
         }
       },
   
-      // 点击标签跳转到详情页
-      goToTagDetail(tagId) {
-        // 使用 Vue Router 跳转到详情页，传递标签 ID
-        this.$router.push(`/tag-detail/${tagId}`);
+      // 检查用户是否已订阅该tag
+      isSubscribed(tagId) {
+        return this.userSubscriptions.includes(tagId);
+      },
+  
+      // 切换订阅状态
+      async toggleSubscription(tagId) {
+        if (this.isSubscribed(tagId)) {
+          // 取消订阅
+          try {
+            const response = await fetch(`/api/v1/UserSubTag/${this.userId}/${tagId}`, {
+              method: 'DELETE',
+            });
+            const data = await response.json();
+            if (data.success) {
+              // 更新用户订阅列表
+              this.userSubscriptions = this.userSubscriptions.filter(id => id !== tagId);
+            } else {
+              console.error("Error unsubscribing:", data.errorMsg);
+            }
+          } catch (error) {
+            console.error("API 请求失败", error);
+          }
+        } else {
+          // 添加订阅
+          try {
+            const response = await fetch(`/api/v1/UserSubTag/${this.userId}/${tagId}`, {
+              method: 'POST',
+            });
+            const data = await response.json();
+            if (data.success) {
+              // 更新用户订阅列表
+              this.userSubscriptions.push(tagId);
+            } else {
+              console.error("Error subscribing:", data.errorMsg);
+            }
+          } catch (error) {
+            console.error("API 请求失败", error);
+          }
+        }
+      },
+  
+      // 获取用户的订阅列表
+      async fetchUserSubscriptions() {
+        try {
+          const response = await fetch(`/api/v1/UserSubTag/${this.userId}/subscriptions`);
+          const data = await response.json();
+          if (data.success) {
+            this.userSubscriptions = data.data.map(sub => sub.tagId);
+          } else {
+            console.error("Error fetching user subscriptions:", data.errorMsg);
+          }
+        } catch (error) {
+          console.error("API 请求失败", error);
+        }
       },
     },
   
     watch: {
-      // 监听 searchQuery 的变化，自动触发搜索
       searchQuery() {
         this.currentPage = 0; // 每次搜索时，重置为第一页
       },
+    },
+  
+    mounted() {
+      // 获取用户的订阅列表
+      this.fetchUserSubscriptions();
     },
   };
   </script>
@@ -153,6 +222,7 @@
   }
   
   .tag-summary-block {
+    position: relative; /* 为订阅按钮定位 */
     width: 120px;
     height: 50px;
     background-color: #a3d8f4; /* 浅蓝色背景 */
@@ -172,6 +242,23 @@
   .tag-summary-block:hover {
     transform: scale(1.1); /* 鼠标悬停时放大 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影效果 */
+  }
+  
+  .subscribe-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    color: black;
   }
   
   .pagination {
