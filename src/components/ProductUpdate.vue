@@ -48,6 +48,11 @@
                     <label for="price">产品价格:</label>
                     <input type="number" v-model="price" required />
                 </div>
+                <!-- 新增图片 URL 输入框 -->
+                <div class="form-group">
+                    <label for="imageUrl">产品图片 URL:</label>
+                    <input type="url" v-model="imageUrl" placeholder="请输入图片的 URL 地址" required />
+                </div>
                 <div class="button-group">
                     <button type="submit">提交修改</button>
                     <button type="button" @click="$emit('go-back')">放弃修改</button>
@@ -84,6 +89,7 @@ export default {
             maxCapacity: '0',
             productType: '跟团游',
             price: '0',
+            imageUrl: '',
         };
     },
     created() {
@@ -107,6 +113,7 @@ export default {
                     this.maxCapacity = product.maxCapacity;
                     this.productType = product.productType;
                     this.price = product.price;
+                    this.imageUrl = product.imageUrl;
                 } else {
                     alert('获取产品信息失败：' + response.data.errorMsg);
                 }
@@ -130,6 +137,7 @@ export default {
                     maxCapacity: this.maxCapacity,
                     productType: this.productType,
                     price: this.price,
+                    imageUrl: this.imageUrl,
                 };
 
                 // 发送 POST 请求到服务器的产品发布接口
@@ -149,6 +157,7 @@ export default {
                     this.maxCapacity = '';
                     this.productType = '';
                     this.price = '';
+                    this.imageUrl = ''; // 清空图片 URL
                     this.$emit('go-back');
                 } else {
                     alert('产品修改失败：' + response.data.errorMsg);

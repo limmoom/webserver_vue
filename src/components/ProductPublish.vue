@@ -47,6 +47,11 @@
                     <label for="price">产品价格:</label>
                     <input type="number" v-model="price" required />
                 </div>
+                <!-- 新增图片 URL 输入框 -->
+                <div class="form-group">
+                    <label for="imageUrl">产品图片 URL:</label>
+                    <input type="url" v-model="imageUrl" placeholder="请输入图片的 URL 地址" required />
+                </div>
                 <div class="button-group">
                     <button type="submit">提交</button>
                     <button type="button" @click="handleDelete">清空</button>
@@ -79,6 +84,7 @@ export default {
         const productType = ref('跟团游');
         const price = ref('0');
         // const UserID = localStorage.getItem('UserID');
+        const imageUrl = ref(''); // 新增的图片 URL
         const store = useStore();
         const currentUser = computed(() => store.getters.currentUser);
         if (!currentUser.value) {
@@ -109,6 +115,7 @@ export default {
                     maxCapacity: maxCapacity.value,
                     productType: productType.value,
                     price: price.value,
+                    imageUrl: imageUrl.value // 添加图片 URL
                 };
 
                 console.log(productDTO);
@@ -130,6 +137,7 @@ export default {
                     maxCapacity.value = '';
                     productType.value = '';
                     price.value = '';
+                    imageUrl.value = ''; // 清空图片 URL
                 } else {
                     alert('产品发布失败：' + response.data.errorMsg);
                 }
@@ -155,6 +163,7 @@ export default {
             maxCapacity.value = '';
             productType.value = '';
             price.value = '';
+            imageUrl.value = ''; // 清空图片 URL
         };
 
         return {
@@ -168,6 +177,7 @@ export default {
             maxCapacity,
             productType,
             price,
+            imageUrl, // 返回图片 URL
             handlePublish,
             handleSave,
             handleDelete,
