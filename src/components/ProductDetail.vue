@@ -5,7 +5,11 @@
         </div>
         <div v-if="product" class="product-info">
             <!-- 左侧图片 -->
-            <div class="product-image"></div>
+            <div
+              class="product-image"
+              :style="{ 'background-image': 'url(' + backgroundImageUrl + ')' }"
+            ></div>
+
             <!-- 右侧标题和价格 -->
             <div class="product-summary">
                 <h3>{{ product.title }}</h3>
@@ -116,6 +120,15 @@ export default {
       newComment: "",  // 用户输入的新评论内容
       replyingToComment: null,  // 当前回复的评论
     };
+  },
+  computed: {
+    backgroundImageUrl() {
+      if (this.product && this.product.title.includes('北京')) {
+        return 'https://youimg1.c-ctrip.com/target/0102a120004fhqcagB7E5_D_10000_1200.jpg?proc=autoorient';
+      } else {
+        return 'https://th.bing.com/th?id=OIP.0HwNH8Qmpdb7nAO6DufZugHaEd&w=322&h=194&c=8&rs=1&qlt=90&o=6&dpr=1.5&pid=3.1&rm=2';
+      }
+    },
   },
   mounted() {
     const productId = this.$route.params.id;
@@ -261,8 +274,8 @@ export default {
 }
 
 .product-image {
-    background: url('https://youimg1.c-ctrip.com/target/0102a120004fhqcagB7E5_D_10000_1200.jpg?proc=autoorient');
-    background-size: contain;
+    background-size: cover;
+    background-position: center;
     width: 300px;
     height: 200px;
 }

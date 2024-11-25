@@ -185,7 +185,7 @@
         products: [], // 搜索结果
         loading: false, // 加载状态
         currentPage: 0, // 当前页
-        pageSize: 10, // 每页显示的数量
+        pageSize: 12, // 每页显示的数量
         totalItems: 0, // 总结果数
         totalPages: 0, // 总页数
       };
@@ -193,6 +193,7 @@
     methods: {
       // 搜索方法
       onSearch() {
+        this.currentPage = 0; // 重置为第一页
         this.fetchProducts();
       },
 
@@ -205,6 +206,7 @@
           // 否则，添加该筛选条件
           this.selectedFilters[key] = value;
         }
+        this.currentPage = 0; // 重置为第一页
         this.fetchProducts(); // 更新搜索结果
       },
 
@@ -238,7 +240,6 @@
       async fetchProductsBySearch() {
         this.loading = true;
         const queryParams = {
-          ...this.selectedFilters,
           keyword: this.searchQuery,
           page: this.currentPage,
           size: this.pageSize,
@@ -262,14 +263,52 @@
         }
       },
 
-      // 判断是否使用筛选或搜索
+      // 请求产品数据，按照搜索关键字和筛选条件
+      async fetchProductsByFilterSearch() {
+        this.loading = true;
+        const queryParams = {
+          keyword: this.searchQuery,
+          page: this.currentPage,
+          size: this.pageSize,
+          ...this.selectedFilters,
+        };
+        const queryString = new URLSearchParams(queryParams).toString();
+        try {
+          const response = await fetch(`/api/v1/TravelProduct/search_new?${queryString}`);
+          const data = await response.json();
+          if (data.success) {
+            this.products = data.data.content || data.data.data;
+            this.totalItems = data.data.totalElements || data.data.total_item;
+            this.totalPages = data.data.totalPages || Math.ceil(this.totalItems / this.pageSize);
+          } else {
+            console.error("Error fetching products:", data.errorMsg);
+          }
+        } catch (error) {
+          console.error("API 请求失败", error);
+        } finally {
+          this.loading = false;
+        }
+      },
+
+      // 判断是否使用筛选或搜索或两者同时
       async fetchProducts() {
-        if (this.searchQuery.trim()) {
-          // 如果搜索框有内容，调用搜索 API
-          this.fetchProductsBySearch();
+        const hasSearchQuery = this.searchQuery.trim() !== "";
+        const hasFilters = Object.keys(this.selectedFilters).length > 0;
+
+        if (hasSearchQuery && !hasFilters) {
+          // 如果搜索框有内容且没有筛选条件，调用搜索 API
+          await this.fetchProductsBySearch();
+        } else if (!hasSearchQuery && hasFilters) {
+          // 如果搜索框为空但有筛选条件，调用筛选 API
+          await this.fetchProductsByFilter();
+        } else if (hasSearchQuery && hasFilters) {
+          // 如果搜索框和筛选条件都有内容，调用筛选+搜索 API
+          await this.fetchProductsByFilterSearch();
         } else {
-          // 如果搜索框为空，调用筛选 API
-          this.fetchProductsByFilter();
+          // 如果既没有搜索关键字也没有筛选条件，可能需要默认加载一些内容或清空结果
+          this.products = [];
+          this.totalItems = 0;
+          this.totalPages = 0;
         }
       },
 
@@ -289,11 +328,7 @@
     },
 
     watch: {
-      // 监听 searchQuery 和 selectedFilters 的变化，自动触发搜索
-      searchQuery() {
-        
-      },
-
+      // 监听 selectedFilters 的变化，自动触发搜索
       selectedFilters: {
         handler() {
           this.currentPage = 0; // 每次筛选条件变化时，重置为第一页
@@ -304,6 +339,7 @@
     },
   };
 </script>
+
 
 
 <style scoped>
