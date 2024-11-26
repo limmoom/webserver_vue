@@ -154,7 +154,7 @@
       <div v-if="!loading && products.length === 0" class="no-results">没有找到相关产品</div>
       <div v-if="!loading" class="product-list">
         <div v-for="(product, index) in products" :key="index" class="product-summary-block" @click="goToProductDetail(product.id)">
-          <div class="product-image" :style="{ backgroundImage: 'url(' + product.url + ')' }"></div>
+          <div class="product-image" :style="{ backgroundImage: 'url(' + (product.url ? product.url : 'https://th.bing.com/th/id/OIP.W0yMYL6Ta7DYDonR9pI7wwHaGL?w=218&h=181&c=7&r=0&o=5&dpr=1.5&pid=1.7') + ')' }"></div>
           <div class="product-info">
             <p class="product-title">{{ product.title }}</p>
             <p class="product-price">{{ product.price }}元</p>

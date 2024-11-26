@@ -7,7 +7,7 @@
       <!-- 左侧图片 -->
       <div
         class="product-image"
-        :style="{ 'background-image': 'url(' + (product.url ? product.url : 'https://th.bing.com/th/id/OIP.W0yMYL6Ta7DYDonR9pI7wwHaGL?w=218&h=181&c=7&r=0&o=5&dpr=1.5&pid=1.7') + ')' }"
+        :style="{ backgroundImage: 'url(' + (product.url ? product.url : 'https://th.bing.com/th/id/OIP.W0yMYL6Ta7DYDonR9pI7wwHaGL?w=218&h=181&c=7&r=0&o=5&dpr=1.5&pid=1.7') + ')' }"
       ></div>
 
       <!-- 右侧标题和价格 -->
