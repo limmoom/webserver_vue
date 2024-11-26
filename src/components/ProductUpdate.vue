@@ -137,7 +137,7 @@ export default {
                     maxCapacity: this.maxCapacity,
                     productType: this.productType,
                     price: this.price,
-                    imageUrl: this.imageUrl,
+                    url: this.imageUrl,
                 };
 
                 // 发送 POST 请求到服务器的产品发布接口

@@ -1,109 +1,106 @@
-<template>    
-    <div class="product-detail">
-        <div>
-            <button @click="goBack" class="arrow-button">← 返回</button>
-        </div>
-        <div v-if="product" class="product-info">
-            <!-- 左侧图片 -->
-            <div
-              class="product-image"
-              :style="{ 'background-image': 'url(' + backgroundImageUrl + ')' }"
-            ></div>
-
-            <!-- 右侧标题和价格 -->
-            <div class="product-summary">
-                <h3>{{ product.title }}</h3>
-                <p><strong>价格：</strong>¥{{ product.price }}</p>
-            </div>
-
-            <!-- 分割线 -->
-            <div class="tableTitle"></div>
-
-            <div class="detail_font">
-                <h4>产品信息</h4>
-            </div>
-
-            <!-- 产品基本信息 -->
-            <div class="product-details">
-                <div class="info-column left-column">
-                    <p><strong>出发日期：</strong>{{ product.startDate }}</p>
-                    <p><strong>结束日期：</strong>{{ product.endDate }}</p>
-                    <p><strong>出发地：</strong>{{ product.departureLocation }}</p>
-                    <p><strong>目的地：</strong>{{ product.destination }}</p>
-                    <p><strong>最大容量：</strong>{{ product.maxCapacity }}</p>
-                </div>
-                <div class="info-column right-column">
-                    <p><strong>特色：</strong>{{ product.features }}</p>
-                    <p><strong>主题：</strong>{{ product.theme }}</p>
-                    <p><strong>产品类型：</strong>{{ product.productType }}</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- 分割线 -->
-        <div class="tableTitle"></div>
-
-        <!-- 发布者信息部分 -->
-        <div v-if="publisher" class="publisher-info">
-            <h4>发布者信息</h4>
-            <p><strong>用户名：</strong>
-                <router-link :to="{ name: 'OtherProfile', params: { id: publisher.id } }">
-                    {{ publisher.name }}
-                </router-link>
-            </p>
-            <p><strong>邮箱：</strong>{{ publisher.email }}</p>
-            <p><strong>公司名称：</strong>{{ publisher.companyName }}</p>
-        </div>
-
-        <div v-else>
-            <p>加载产品信息中...</p>
-        </div>
-
-        <div class="tableTitle"></div>
-
-        <!-- 评论区 -->
-        <div class="comments-section">
-            <h4>评论区</h4>
-
-            <!-- 输入评论的文本框和按钮 -->
-            <div class="comment-input">
-                <textarea v-model="newComment" placeholder="请输入评论内容" rows="4"></textarea>
-                <button @click="submitComment" :disabled="!newComment.trim()">发送评论</button>
-            </div>
-
-            <!-- 评论列表 -->
-            <div class="comments-list">
-                <div v-if="comments.length === 0" class="no-comments">暂无评论</div>
-                
-                <div v-for="comment in comments" :key="comment.id" class="comment-item">
-                    <p class="comment-author">
-                        <router-link :to="{ name: 'OtherProfile', params: { id: comment.userId } }">
-                            {{ comment.userName }}
-                        </router-link>
-                        <span class="comment-time">{{ formatDate(comment.issuedAt) }}</span>
-                        <button v-if="!replyingToComment" @click="startReply(comment)">回复</button>
-                    </p>
-                    <p class="comment-content">{{ comment.content }}</p>
-
-                    <!-- 二级评论 -->
-                    <div v-if="comment.replies && comment.replies.length > 0">
-                        <div v-for="reply in comment.replies" :key="reply.id" class="comment-item reply">
-                            <p class="comment-author">
-                                <router-link :to="{ name: 'OtherProfile', params: { id: reply.userId } }">
-                                    {{ reply.userName }}
-                                </router-link>
-                                <span class="comment-time">{{ formatDate(reply.issuedAt) }}</span>
-                            </p>
-                            <p class="comment-content">{{ reply.content }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        
-
+<template>
+  <div class="product-detail">
+    <div>
+      <button @click="goBack" class="arrow-button">← 返回</button>
     </div>
+    <div v-if="product" class="product-info">
+      <!-- 左侧图片 -->
+      <div
+        class="product-image"
+        :style="{ 'background-image': 'url(' + (product.url ? product.url : 'https://th.bing.com/th/id/OIP.W0yMYL6Ta7DYDonR9pI7wwHaGL?w=218&h=181&c=7&r=0&o=5&dpr=1.5&pid=1.7') + ')' }"
+      ></div>
+
+      <!-- 右侧标题和价格 -->
+      <div class="product-summary">
+        <h3>{{ product.title }}</h3>
+        <p><strong>价格：</strong>¥{{ product.price }}</p>
+      </div>
+
+      <!-- 分割线 -->
+      <div class="tableTitle"></div>
+
+      <div class="detail_font">
+        <h4>产品信息</h4>
+      </div>
+
+      <!-- 产品基本信息 -->
+      <div class="product-details">
+        <div class="info-column left-column">
+          <p><strong>出发日期：</strong>{{ product.startDate }}</p>
+          <p><strong>结束日期：</strong>{{ product.endDate }}</p>
+          <p><strong>出发地：</strong>{{ product.departureLocation }}</p>
+          <p><strong>目的地：</strong>{{ product.destination }}</p>
+          <p><strong>最大容量：</strong>{{ product.maxCapacity }}</p>
+        </div>
+        <div class="info-column right-column">
+          <p><strong>特色：</strong>{{ product.features }}</p>
+          <p><strong>主题：</strong>{{ product.theme }}</p>
+          <p><strong>产品类型：</strong>{{ product.productType }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分割线 -->
+    <div class="tableTitle"></div>
+
+    <!-- 发布者信息部分 -->
+    <div v-if="publisher" class="publisher-info">
+      <h4>发布者信息</h4>
+      <p><strong>用户名：</strong>
+        <router-link :to="{ name: 'OtherProfile', params: { id: publisher.id } }">
+          {{ publisher.name }}
+        </router-link>
+      </p>
+      <p><strong>邮箱：</strong>{{ publisher.email }}</p>
+      <p><strong>公司名称：</strong>{{ publisher.companyName }}</p>
+    </div>
+
+    <div v-else>
+      <p>加载产品信息中...</p>
+    </div>
+
+    <div class="tableTitle"></div>
+
+    <!-- 评论区 -->
+    <div class="comments-section">
+      <h4>评论区</h4>
+
+      <!-- 输入评论的文本框和按钮 -->
+      <div class="comment-input">
+        <textarea v-model="newComment" placeholder="请输入评论内容" rows="4"></textarea>
+        <button @click="submitComment" :disabled="!newComment.trim()">发送评论</button>
+      </div>
+
+      <!-- 评论列表 -->
+      <div class="comments-list">
+        <div v-if="comments.length === 0" class="no-comments">暂无评论</div>
+        
+        <div v-for="comment in comments" :key="comment.id" class="comment-item">
+          <p class="comment-author">
+            <router-link :to="{ name: 'OtherProfile', params: { id: comment.userId } }">
+              {{ comment.userName }}
+            </router-link>
+            <span class="comment-time">{{ formatDate(comment.issuedAt) }}</span>
+            <button v-if="!replyingToComment" @click="startReply(comment)">回复</button>
+          </p>
+          <p class="comment-content">{{ comment.content }}</p>
+
+          <!-- 二级评论 -->
+          <div v-if="comment.replies && comment.replies.length > 0">
+            <div v-for="reply in comment.replies" :key="reply.id" class="comment-item reply">
+              <p class="comment-author">
+                <router-link :to="{ name: 'OtherProfile', params: { id: reply.userId } }">
+                  {{ reply.userName }}
+                </router-link>
+                <span class="comment-time">{{ formatDate(reply.issuedAt) }}</span>
+              </p>
+              <p class="comment-content">{{ reply.content }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -121,15 +118,6 @@ export default {
       replyingToComment: null,  // 当前回复的评论
     };
   },
-  computed: {
-    backgroundImageUrl() {
-      if (this.product && this.product.title.includes('北京')) {
-        return 'https://youimg1.c-ctrip.com/target/0102a120004fhqcagB7E5_D_10000_1200.jpg?proc=autoorient';
-      } else {
-        return 'https://th.bing.com/th?id=OIP.0HwNH8Qmpdb7nAO6DufZugHaEd&w=322&h=194&c=8&rs=1&qlt=90&o=6&dpr=1.5&pid=3.1&rm=2';
-      }
-    },
-  },
   mounted() {
     const productId = this.$route.params.id;
     this.fetchProductDetails(productId);
@@ -144,6 +132,7 @@ export default {
         const response = await axios.get(`/api/v1/TravelProduct/${productId}`);
         if (response.data.success) {
           this.product = response.data.data;
+          console.log("product:", this.product);
           this.fetchPublisherInfo(this.product.userId);
         } else {
           this.errorMessage = response.data.errorMsg;
@@ -230,32 +219,29 @@ export default {
               // 如果是回复，则将该评论添加到对应的一级评论的回复中
               const newReply = response.data.data;
               this.replyingToComment.replies = this.replyingToComment.replies || [];
-              this.replyingToComment.replies.unshift(newReply);
-              // 二级评论按时间排序
-              this.replyingToComment.replies.sort((a, b) => new Date(a.issuedAt) - new Date(b.issuedAt));
+              this.replyingToComment.replies.push(newReply);
             } else {
-              // 否则是新评论，直接添加到评论列表
-              this.comments.unshift(response.data.data);
+              this.comments.push(response.data.data);
             }
-
-            this.newComment = ""; // 清空评论框
-            this.replyingToComment = null; // 清空当前回复的评论
+            this.newComment = ""; // 清空评论输入框
+            this.replyingToComment = null; // 重置回复状态
           } else {
-            console.error('发布评论失败：', response.data.errorMsg);
+            console.error('提交评论失败：', response.data.errorMsg);
           }
         } catch (error) {
-          console.error('发布评论时出错：', error);
+          console.error('提交评论时出错：', error);
         }
       }
     },
 
     formatDate(dateString) {
       const date = new Date(dateString);
-      return date.toLocaleString();
+      return `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
     }
   }
 };
 </script>
+
 
 <style scoped>
 .product-detail {

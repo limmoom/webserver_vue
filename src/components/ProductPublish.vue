@@ -115,7 +115,7 @@ export default {
                     maxCapacity: maxCapacity.value,
                     productType: productType.value,
                     price: price.value,
-                    imageUrl: imageUrl.value // 添加图片 URL
+                    url: imageUrl.value // 添加图片 URL
                 };
 
                 console.log(productDTO);

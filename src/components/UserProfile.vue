@@ -114,7 +114,7 @@
           <h3>{{ dynamic.title }}</h3>
           <p>{{ dynamic.content }}</p>
           <p><strong>发布时间：</strong>{{ new Date(dynamic.issuedAt).toLocaleString() }}</p>
-          <p><strong>Tag: </strong>
+          <p><strong>节点: </strong>
             <span>
               {{ dynamic.tags && dynamic.tags.length > 0
                 ? dynamic.tags.map(tag => `#${tag.name}`).join(', ')

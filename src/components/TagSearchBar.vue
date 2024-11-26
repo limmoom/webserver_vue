@@ -6,7 +6,7 @@
         <input
           type="text"
           v-model="searchQuery"
-          placeholder="搜索tag..."
+          placeholder="搜索节点..."
           class="search-box"
         />
         <button @click="onSearch" class="search-button">搜索</button>
@@ -16,8 +16,8 @@
   
       <!-- 搜索结果部分 -->
       <div class="tag-results">
-        <div v-if="loading" class="loading">在搜索框中输入tag，可搜索并订阅标签</div>
-        <div v-if="!loading && tags.length === 0" class="no-results">没有找到相关tag</div>
+        <div v-if="loading" class="loading">在搜索框中输入节点，可搜索并订阅节点</div>
+        <div v-if="!loading && tags.length === 0" class="no-results">没有找到相关节点</div>
         <div v-if="!loading" class="tag-list">
           <div
             v-for="(tag, index) in tags"

@@ -153,13 +153,12 @@
       <div v-if="loading" class="loading">加载中...</div>
       <div v-if="!loading && products.length === 0" class="no-results">没有找到相关产品</div>
       <div v-if="!loading" class="product-list">
-        <div
-          v-for="(product, index) in products"
-          :key="index"
-          class="product-summary-block"
-          @click="goToProductDetail(product.id)"
-        >
-          <p>{{ product.title }}</p>
+        <div v-for="(product, index) in products" :key="index" class="product-summary-block" @click="goToProductDetail(product.id)">
+          <div class="product-image" :style="{ backgroundImage: 'url(' + product.url + ')' }"></div>
+          <div class="product-info">
+            <p class="product-title">{{ product.title }}</p>
+            <p class="product-price">{{ product.price }}元</p>
+          </div>
         </div>
       </div>
 
@@ -421,17 +420,50 @@
   width: 210px;
   height: 240px;
   background-color: #ccc;
-  text-align: center;
-  line-height: 50px;
   border-radius: 4px;
   cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 增加平滑过渡 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-summary-block:hover {
-  transform: scale(1.1); /* 鼠标悬停时放大 */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 添加阴影效果 */
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
+
+.product-image {
+  height: 60%;
+  background-size: cover;
+  background-position: center;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.product-info {
+  height: 40%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left; /* 改为居左显示 */
+}
+
+.product-title {
+  font-weight: bold;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2; /* 限制为2行 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis; /* 超出部分省略号 */
+}
+
+.product-price {
+  color: #ff5722;
+  margin-top: 5px;
+}
+
 
 .pagination {
   display: flex;

@@ -12,7 +12,7 @@
                     <textarea rows="5" v-model="content" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="tags">标签 (用 '#' 分隔):</label>
+                    <label for="tags">节点 (用 '#' 分隔):</label>
                     <input type="text" v-model="tagsInput" placeholder="例如：#旅行#冒险" />
                 </div>
                 <div class="button-group">
