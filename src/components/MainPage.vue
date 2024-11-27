@@ -14,12 +14,13 @@
       <aside v-if="!isSidebarCollapsed" class="sidebar">
         <ul>
           <li><a href="#" @click.prevent="navigateToComponent('SearchBar')">产品搜索</a></li>
-          <li><a href="#" @click.prevent="navigateToComponent('TagSearchBar')">标签搜索</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('TagSearchBar')">节点搜索</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('Subscribe')">我的订阅</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('UserProfile')">个人主页</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('ChatPage')">聊天信息</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('ProductPublish')">新信息发布</a></li>
           <li><a href="#" @click.prevent="navigateToComponent('DynamicPublish')">新动态发布</a></li>
+          <li><a href="#" @click.prevent="navigateToComponent('TagPublish')">新节点发布</a></li>
         </ul>
       </aside>
       <div class="content">
@@ -40,6 +41,8 @@ import ChatPage from './ChatPage.vue';
 import DynamicPublish from './DynamicPublish.vue';
 import TagSearchBar from './TagSearchBar.vue';
 import DynamicEdit from './DynamicEdit.vue';
+import TagPublish from './TagPublish.vue';
+import TagEdit from './TagEdit.vue';
 
 export default {
   name: 'MainPage',
@@ -54,6 +57,8 @@ export default {
     DynamicPublish,
     TagSearchBar,
     DynamicEdit,
+    TagPublish,
+    TagEdit,
   },
   data() {
     return {

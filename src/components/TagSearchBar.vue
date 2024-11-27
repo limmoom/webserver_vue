@@ -75,7 +75,7 @@
         this.fetchTags();
       },
   
-      // 请求标签数据，按照搜索关键字
+      // 请求节点数据，按照搜索关键字
       async fetchTags() {
         //this.loading = true;
         const queryParams = {

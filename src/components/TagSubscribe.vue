@@ -33,8 +33,8 @@ export default {
   data() {
     return {
       userId: "", // 当前用户ID
-      subscriptions: [], // 用户订阅的标签列表
-      dynamics: [], // 订阅标签的关联动态
+      subscriptions: [], // 用户订阅的节点列表
+      dynamics: [], // 订阅节点的关联动态
     };
   },
   computed: {
@@ -47,7 +47,7 @@ export default {
   created() {
     this.userId = this.currentUser.id;
 
-    // 获取用户订阅标签列表和相关动态
+    // 获取用户订阅节点列表和相关动态
     this.fetchTagSubscriptions()
       .then(() => this.fetchDynamicsForTags())
       .then(() => this.fetchPublisherNames())
@@ -56,7 +56,7 @@ export default {
       });
   },
   methods: {
-    // 获取用户订阅的标签列表
+    // 获取用户订阅的节点列表
     async fetchTagSubscriptions() {
       try {
         const response = await axios.get(`/api/v1/UserSubTag/${this.userId}/subscriptions`);
@@ -69,7 +69,7 @@ export default {
         console.error("Error fetching tag subscriptions:", error);
       }
     },
-    // 根据订阅标签获取关联动态
+    // 根据订阅节点获取关联动态
     async fetchDynamicsForTags() {
       try {
         const allDynamics = [];

@@ -12,8 +12,13 @@
                     <textarea rows="5" v-model="content" required></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="tags">节点 (用 '#' 分隔):</label>
-                    <input type="text" v-model="tagsInput" placeholder="例如：#旅行#冒险" />
+                    <label for="tags">节点 (请选择):</label>
+                    <select v-model="selectedTag" required>
+                        <option value="">请选择节点</option>
+                        <option v-for="(tag, index) in tags" :key="index" :value="tag">
+                            {{ tag }}
+                        </option>
+                    </select>
                 </div>
                 <div class="button-group">
                     <button type="submit">提交</button>
@@ -25,7 +30,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useStore } from 'vuex';
 
@@ -34,41 +39,50 @@ export default {
     setup() {
         const title = ref('');
         const content = ref('');
-        const tagsInput = ref('');
+        const selectedTag = ref('');
+        const tags = ref([]);
         const store = useStore();
         const currentUser = computed(() => store.getters.currentUser);
-        if (!currentUser.value) {
-            console.log('当前没有登录用户。');
-            // 处理未登录情况
-        }
         const userId = currentUser.value ? currentUser.value.id : null;
+
+        // 获取节点列表
+        const fetchTags = async () => {
+            try {
+                const response = await axios.get('/api/v1/Tag/list');
+                if (response.data.success) {
+                    tags.value = response.data.data;
+                } else {
+                    console.error('获取节点失败:', response.data.errorMsg);
+                }
+            } catch (error) {
+                console.error('请求节点列表时出错:', error);
+            }
+        };
+
+        // 组件挂载时获取节点列表
+        onMounted(() => {
+            fetchTags();
+        });
 
         const handlePublish = async () => {
             try {
+                // 只传递选中的节点作为数组
                 const dynamicDTO = {
                     title: title.value,
                     content: content.value,
                     userId: userId,
                 };
 
-                // 处理标签，将 tagsInput 按 '#' 分割
-                const tagsArray = tagsInput.value.split('#').filter(tag => tag.trim() !== '');
-                // 构建查询参数
-                const queryParams = tagsArray.map(tag => `tags=${encodeURIComponent(tag.trim())}`).join('&');
-                // 拼接请求 URL
+                const queryParams = selectedTag.value ? `tags=${encodeURIComponent(selectedTag.value)}` : '';
                 const url = `/api/v1/Dynamic?${queryParams}`;
-                console.log(url);
-                console.log(dynamicDTO);
+                console.log(url); // 确认提交的 URL 和数据
 
                 const response = await axios.post(url, dynamicDTO);
-                console.log(response);
-
                 if (response.data.success) {
                     alert('动态发布成功！');
-                    // 清空表单
                     title.value = '';
                     content.value = '';
-                    tagsInput.value = '';
+                    selectedTag.value = '';
                 } else {
                     alert('动态发布失败：' + response.data.errorMsg);
                 }
@@ -81,13 +95,14 @@ export default {
         const handleClear = () => {
             title.value = '';
             content.value = '';
-            tagsInput.value = '';
+            selectedTag.value = '';
         };
 
         return {
             title,
             content,
-            tagsInput,
+            selectedTag,
+            tags,
             handlePublish,
             handleClear,
         };
@@ -151,7 +166,8 @@ body {
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
     flex: 1;
     padding: 12px;
     border: 1px solid #ccc;

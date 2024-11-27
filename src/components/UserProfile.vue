@@ -107,8 +107,25 @@
       </div>
     </div>
 
+    <div style="margin-bottom: 30px;"></div>
+
+    <div class="tag-block">
+      <h3>发布的节点</h3>
+      <ul class="tag-container">
+        <div class="tag" v-for="tag in tags" :key="tag.id">
+          <span class="tag-name">{{ tag.name }}</span>
+          <div class="tag-actions">
+            <button @click="editTag(tag.id, tag.name, tag.description)" class="link-button">修改</button>
+            <button @click="deleteTag(tag.id)" class="link-button">删除</button>
+          </div>
+        </div>
+      </ul>
+    </div>
+
+    <div style="margin-bottom: 30px;"></div>
+
     <div>
-      <h2>我的动态</h2>
+      <h3>发布的动态</h3>
       <ul v-if="dynamics.length > 0">
         <li v-for="dynamic in sortedDynamics" :key="dynamic.id">
           <h3>{{ dynamic.title }}</h3>
@@ -168,6 +185,7 @@ export default {
       totalPages: 0, // 总页数
       loading: false, // 加载状态
       dynamics: [], // 当前用户的动态
+      tags: [], // 用于存储节点列表
     };
   },
   computed: {
@@ -195,8 +213,9 @@ export default {
     //   this.fetchUserInfo(this.userId);
     //   this.fetchUserProducts(this.userId); // 获取用户发布的旅游产品信息
     // }
-    // 获取当前用户的动态
+    // 获取当前用户的动态和节点
     this.fetchUserDynamics();
+    this.fetchUserTags(); 
   },
   methods: {
     async fetchUserInfo(UserId) {
@@ -313,6 +332,49 @@ export default {
           alert('删除动态时发生错误，请稍后重试。');
         }
       }
+    },
+    // 获取用户节点
+    async fetchUserTags() {
+      try {
+        const response = await axios.get(`/api/v1/User/${this.user.id}/Tags`);
+        if (response.data.success) {
+          this.tags = response.data.data.data;
+        } else {
+          alert('获取节点信息失败：' + response.data.errorMsg);
+        }
+      } catch (error) {
+        console.error('获取节点信息请求出错：', error);
+        alert('获取节点信息时发生错误，请稍后重试。');
+      }
+    },
+    // 删除节点
+    async deleteTag(tagId) {
+      if (confirm('确定要删除这个节点吗？')) {
+        try {
+          const response = await axios.delete(`/api/v1/Tag/${tagId}`);
+          if (response.data.success) {
+            alert('节点删除成功！');
+            // 删除成功后重新获取节点列表
+            this.fetchUserTags();
+          } else {
+            alert('删除节点失败：' + response.data.errorMsg);
+          }
+        } catch (error) {
+          console.error('删除节点请求出错：', error);
+          alert('删除节点时发生错误，请稍后重试。');
+        }
+      }
+    },
+    editTag(tagId, name, description) {
+      this.$router.push({
+        name: 'mainpage',
+        query: {
+          component: 'TagEdit',
+          tagId: tagId,
+          name: name,
+          description: description
+        }
+      });
     },
     editProduct(productId) {
       // 切换到产品编辑组件
@@ -544,6 +606,7 @@ export default {
 }
 
 .product-results {
+  width: 1200px;
   display: flex;
   justify-content: flex-start;
   /* 左对齐 */
@@ -684,4 +747,44 @@ hr {
 .btn-delete:hover {
   background-color: #c82333;
 }
+
+.tag-block {
+  width: 1200px;
+}
+
+.tag-container {
+  display: flex; /* 使用 flexbox 横向排列子元素 */
+  flex-wrap: wrap; /* 如果一行排不下，自动换行 */
+  gap: 10px; /* 每个节点之间的水平和垂直间距 */
+  list-style: none; /* 去掉 ul 默认的样式 */
+  padding: 0;
+  margin: 0;
+}
+
+.tag {
+  width: 160px;
+  height: auto; /* 自动调整高度以适应内容 */
+  background-color: #a3d8f4; /* 浅蓝色背景 */
+  text-align: center;
+  display: flex;
+  flex-direction: column; /* 垂直排列内部内容 */
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  padding: 10px; /* 增加内边距 */
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* 平滑过渡 */
+}
+
+.tag-name {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px; /* 为名字和按钮之间增加间距 */
+}
+
+.tag-actions {
+  display: flex;
+  gap: 10px; /* 按钮之间的间距 */
+}
+
 </style>
