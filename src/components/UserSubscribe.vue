@@ -25,7 +25,7 @@
             href="javascript:void(0)"
             @click="navigateToProductDetail(dynamic.urlId)"
           >
-            {{ dynamic.linkedProductName || '加载中...' }}
+            {{'点此查看详情' }}
           </a>
         </p>
       </li>

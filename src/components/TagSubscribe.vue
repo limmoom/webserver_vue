@@ -18,6 +18,15 @@
               : '无' }}
           </span>
         </p>
+        <p v-if="dynamic.urlId">
+          <strong>相关产品: </strong>
+          <a
+            href="javascript:void(0)"
+            @click="navigateToProductDetail(dynamic.urlId)"
+          >
+            {{ '点此查看详情' }}
+          </a>
+        </p>
       </li>
     </ul>
     <p v-else>加载动态信息中</p>
@@ -113,6 +122,9 @@ export default {
       } catch (error) {
         console.error("Error fetching publisher names:", error);
       }
+    },
+    navigateToProductDetail(productId) {
+      this.$router.push(`/product-detail/${productId}`);
     },
     // 跳转到动态详情页
     goToDynamicDetail(dynamicId) {

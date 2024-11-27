@@ -12,7 +12,7 @@
           </router-link>
         </p>
         <p><strong>发布时间：</strong>{{ formatDate(dynamic.issuedAt) }}</p>
-        <p><strong>Tag: </strong>
+        <p><strong>节点: </strong>
           <span>
             {{ dynamic.tags && dynamic.tags.length > 0
               ? dynamic.tags.map(tag => `#${tag.name}`).join(', ')
