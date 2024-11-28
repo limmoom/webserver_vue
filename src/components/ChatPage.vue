@@ -22,8 +22,15 @@
             <div class="message-input">
                 <textarea v-model="newMessage" placeholder="请输入消息..." @keyup.enter="sendMessage"></textarea>
                 <button @click="sendMessage">发送</button>
+                <div>
+                    <!-- 其他代码 -->
+                    <input type="file" id="fileInput" @change="handleFileSelect" />
+                    <button @click="sendFile">发送文件</button>
+                    <!-- 其他代码 -->
+                </div>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -49,6 +56,9 @@ export default {
             curUserId: null, // 添加当前用户ID
             wsid: null,
             userId: null,
+            fileUUID: '',     // 存储文件的 UUID
+            fileName: '',     // 存储文件名
+            downloadedFiles: new Set(), // 跟踪已下载的文件
         };
     },
     computed: {
@@ -89,6 +99,8 @@ export default {
                     this.loadChatHistory(contactId);
                 }
             }
+
+            this.chatHistory = [];
         }
     },
     watch: {
@@ -114,7 +126,7 @@ export default {
     },
     methods: {
         initializeWebSocket() {
-            
+
             const url = `ws://43.143.213.221:8080/websocket/${this.curUserId}`;
             // const url = `ws://43.143.213.221:8080/websocket/${this.wsid}`;
             this.websocket = new WebSocket(url);
@@ -131,8 +143,24 @@ export default {
             console.log('接收到消息:', event.data);
             try {
                 const data = JSON.parse(event.data);
-                // const { contactId, sender, content } = data;
                 const { receiverId, senderId, content } = data;
+                // const { contactId, sender, content } = data;
+                if (content.startsWith('/api')) {
+                    // 接收到文件 UUID，发送请求下载文件
+                    const fileUUID = content.split('+')[0];
+                    const fileName = content.split('+')[1];
+                    console.log('接收到文件消息:', data);
+                    console.log('fileName:', fileName);
+                    this.downloadFile(fileUUID, fileName);
+                    // const fileMessage = document.createElement('li');
+                    // fileMessage.innerHTML = `
+                    //     <a href="${message.fileUrl}" target="_blank">${message.fileName}</a>
+                    //     <span>(${message.fileSize} bytes)</span>
+                    // `;
+                    //   messages.appendChild(fileMessage);
+                    return;
+                }
+
                 const contactId = String(senderId);
                 const sender = senderId;
                 console.log('receiverId:', receiverId);
@@ -343,6 +371,83 @@ export default {
                     chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
                 }
             });
+        },
+        // 文件选择后立即上传文件
+        async handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await axios.post('api/v1/files/upload', formData);
+                    // console.log(response.data)
+                    if (response.data.fileUrl) {
+                        // 获取文件的 UUID 和文件名
+                        this.fileUUID = response.data.fileUrl;
+                        this.fileName = response.data.fileName;
+                        console.log('文件上传成功，UUID:', this.fileUUID);
+                    } else {
+                        console.error('文件上传失败');
+                    }
+                } catch (error) {
+                    console.error('上传文件出错：', error);
+                }
+            }
+        },
+
+        // 点击发送文件，将 UUID 通过 WebSocket 发送给联系人
+        sendFile() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+
+
+            if (file && this.fileUUID && this.activeContactId) {
+                // const formData = new FormData();
+                // formData.append('file', file);
+                const fileName = file.name;
+
+                const fileMessage = {
+                    senderId: this.curUserId,
+                    receiverId: this.activeContactId,
+                    // messageType: 'file',
+                    // uuid: this.fileUUID,
+                    // fileName: this.fileName，
+                    content: this.fileUUID + "+" + fileName,
+                };
+                this.websocket.send(JSON.stringify(fileMessage));
+                console.log('发送文件消息：', fileMessage);
+            } else {
+                console.warn('请先选择文件并确保有有效的联系人');
+            }
+        },
+        // 下载文件
+        async downloadFile(uuid, fileName) {
+            if (this.downloadedFiles.has(uuid)) {
+                console.warn('文件已经下载过。');
+                return;
+            }
+
+            try {
+                const response = await fetch(uuid, {
+                    mode: 'cors' // 确保跨域请求成功
+                });
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName);
+
+                document.body.appendChild(link);
+                link.click();
+
+                // 下载完成后，移除链接和释放对象 URL
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error('下载文件出错：', error);
+            }
         },
     },
 };
